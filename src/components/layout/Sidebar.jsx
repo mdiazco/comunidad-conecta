@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 
 const NAV_ITEMS = [
-  { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/communities', icon: Building2, label: 'Comunidades', superadminOnly: true },
   { path: '/tasks', icon: ClipboardList, label: 'Tareas' },
   { path: '/procedures', icon: FileText, label: 'Procedimientos' },
