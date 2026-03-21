@@ -242,9 +242,12 @@ export default function Landing() {
 
       {/* FOOTER */}
       <footer className="bg-slate-900 text-slate-400 py-8 px-6 text-center text-sm">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <Building2 className="w-4 h-4 text-primary" />
-          <span className="text-white font-semibold">Comunidad Conecta 2.0</span>
+        <div className="flex items-center justify-center mb-2">
+          <img
+            src="https://media.base44.com/images/public/69be92d9b179f726fbced205/06d8d1e40_image.png"
+            alt="Comunidad Conecta"
+            className="h-12 w-auto opacity-80"
+          />
         </div>
         <p>Plataforma de gestión residencial · {new Date().getFullYear()}</p>
       </footer>
