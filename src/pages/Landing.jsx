@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Building2, ClipboardList, Users, Shield, ChevronRight, CheckCircle2, Bell, FileText } from 'lucide-react';
+import { Building2, ClipboardList, Users, Shield, ChevronRight, CheckCircle2, Bell, FileText, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 
 const features = [
   {
@@ -43,6 +43,28 @@ const workflow = [
 ];
 
 export default function Landing() {
+  const videoRef = useRef(null);
+  const [muted, setMuted] = useState(true);
+  const [playing, setPlaying] = useState(true);
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !muted;
+      setMuted(!muted);
+    }
+  };
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (playing) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setPlaying(!playing);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white font-inter">
 
@@ -64,41 +86,90 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* HERO */}
-      <section className="pt-32 pb-24 px-6 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 relative overflow-hidden">
-        {/* decorative circles */}
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4 pointer-events-none" />
+      {/* ── HERO CON VIDEO ── */}
+      <section className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
 
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <span className="inline-block bg-primary/20 text-blue-300 text-xs font-semibold px-3 py-1 rounded-full mb-6 border border-primary/30">
-            Plataforma de gestión residencial
+        {/* Video de fondo */}
+        <video
+          ref={videoRef}
+          className="absolute inset-0 w-full h-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster="https://media.base44.com/images/public/69be92d9b179f726fbced205/03cefdb27_generated_image.png"
+        >
+          {/* Video de Pexels: comunidad, vecinos, gente conectada */}
+          <source
+            src="https://videos.pexels.com/video-files/3252925/3252925-uhd_2560_1440_25fps.mp4"
+            type="video/mp4"
+          />
+          <source
+            src="https://videos.pexels.com/video-files/7578540/7578540-hd_1920_1080_25fps.mp4"
+            type="video/mp4"
+          />
+        </video>
+
+        {/* Overlay oscuro con gradiente */}
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/70 via-slate-900/60 to-slate-900/80" />
+
+        {/* Controles de video */}
+        <div className="absolute bottom-6 right-6 z-20 flex gap-2">
+          <button
+            onClick={togglePlay}
+            className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+          >
+            {playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          </button>
+          <button
+            onClick={toggleMute}
+            className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+          >
+            {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          </button>
+        </div>
+
+        {/* Contenido del hero */}
+        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+          <span className="inline-block bg-primary/30 text-blue-200 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 border border-primary/40 backdrop-blur-sm">
+            ✦ Plataforma de gestión residencial
           </span>
-          <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight mb-6">
-            La gestión de tu comunidad,{' '}
-            <span className="text-primary">sin fricciones</span>
+
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-6 drop-shadow-lg">
+            Conecta tu comunidad.<br />
+            <span className="text-blue-400">Gestiona sin fricciones.</span>
           </h1>
-          <p className="text-slate-300 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto mb-10">
-            Comunidad Conecta centraliza la administración de edificios y condominios: tareas operativas, procedimientos, evidencias y comunicación entre equipo y comité en un solo lugar.
+
+          <p className="text-slate-200 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto mb-10 drop-shadow">
+            Centraliza la administración de edificios y condominios: tareas, procedimientos, evidencias y comunicación entre equipo y comité, en un solo lugar.
           </p>
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/dashboard"
-              className="bg-primary text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-primary/90 transition-colors text-base flex items-center justify-center gap-2"
+              className="bg-primary text-white font-bold px-10 py-4 rounded-2xl hover:bg-primary/90 transition-all text-base flex items-center justify-center gap-2 shadow-2xl shadow-primary/40"
             >
-              Acceder al panel <ChevronRight className="w-5 h-5" />
+              Ingresar al sistema <ChevronRight className="w-5 h-5" />
             </Link>
             <a
               href="#features"
-              className="bg-white/10 text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-white/20 transition-colors text-base border border-white/20"
+              className="bg-white/15 text-white font-semibold px-10 py-4 rounded-2xl hover:bg-white/25 transition-all text-base border border-white/30 backdrop-blur-sm"
             >
               Conocer más
             </a>
           </div>
         </div>
 
-        {/* mini stats */}
-        <div className="max-w-3xl mx-auto mt-16 grid grid-cols-3 gap-4 relative z-10">
+        {/* Indicador de scroll */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1 animate-bounce">
+          <div className="w-px h-8 bg-white/40 rounded-full" />
+          <div className="w-1.5 h-1.5 rounded-full bg-white/60" />
+        </div>
+      </section>
+
+      {/* MINI STATS */}
+      <section className="bg-slate-900 py-10 px-6">
+        <div className="max-w-4xl mx-auto grid grid-cols-3 gap-4">
           {[
             { value: 'Multi-tenant', label: 'Varias comunidades' },
             { value: 'Rol-based', label: 'Control de accesos' },
@@ -141,12 +212,9 @@ export default function Landing() {
             <p className="text-slate-500 mt-3 text-lg">Comienza en minutos con un flujo simple y estructurado.</p>
           </div>
           <div className="grid md:grid-cols-4 gap-8">
-            {workflow.map((w, i) => (
-              <div key={w.step} className="flex flex-col items-center text-center relative">
-                {i < workflow.length - 1 && (
-                  <div className="hidden md:block absolute top-6 left-[calc(50%+28px)] right-[-calc(50%-28px)] h-px bg-slate-200 z-0" style={{width: 'calc(100% - 56px)', left: 'calc(50% + 28px)'}} />
-                )}
-                <div className="w-12 h-12 rounded-full bg-primary text-white font-bold text-sm flex items-center justify-center mb-4 z-10 relative shadow-lg">
+            {workflow.map((w) => (
+              <div key={w.step} className="flex flex-col items-center text-center">
+                <div className="w-12 h-12 rounded-full bg-primary text-white font-bold text-sm flex items-center justify-center mb-4 shadow-lg">
                   {w.step}
                 </div>
                 <h4 className="font-semibold text-slate-800 mb-1">{w.label}</h4>
