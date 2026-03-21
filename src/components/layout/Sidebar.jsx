@@ -49,7 +49,7 @@ export default function Sidebar({ user, collapsed, setCollapsed, mobileOpen, set
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {filteredItems.map(item => {
           const isActive = location.pathname === item.path || 
-            (item.path !== '/' && location.pathname.startsWith(item.path));
+            (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
           return (
             <Link
               key={item.path}
