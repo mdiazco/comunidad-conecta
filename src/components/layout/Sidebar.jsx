@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Building2, Users, ClipboardList, 
-  FileText, Bell, Settings, LogOut, ChevronLeft, ChevronRight, X
+  FileText, Bell, Settings, LogOut, ChevronLeft, ChevronRight, X, Store
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { path: '/tasks', icon: ClipboardList, label: 'Tareas' },
   { path: '/procedures', icon: FileText, label: 'Procedimientos' },
   { path: '/users', icon: Users, label: 'Usuarios' },
+  { path: '/suppliers', icon: Store, label: 'Proveedores' },
   { path: '/notifications', icon: Bell, label: 'Notificaciones' },
   { path: '/settings', icon: Settings, label: 'Mantenedores', superadminOnly: true },
 ];
