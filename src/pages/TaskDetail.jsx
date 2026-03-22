@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, Play, CheckCircle, AlertTriangle, Upload, Clock, User, Building2, FileText } from 'lucide-react';
+import { ArrowLeft, Play, CheckCircle, AlertTriangle, Clock, User, Building2, Calendar, Tag, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -13,16 +12,28 @@ import { toast } from 'sonner';
 import EvidenceUpload from '@/components/evidence/EvidenceUpload';
 import EvidenceList from '@/components/evidence/EvidenceList';
 import { isSuperAdmin, canObserveTask, canStartFinishTask } from '@/lib/permissions';
+import { cn } from '@/lib/utils';
 
 const STATUS_MAP = {
-  creada: { label: 'Creada', class: 'bg-muted text-muted-foreground' },
-  asignada: { label: 'Asignada', class: 'bg-primary/10 text-primary' },
-  en_ejecucion: { label: 'En ejecución', class: 'bg-amber-100 text-amber-700' },
-  finalizada: { label: 'Finalizada', class: 'bg-emerald-100 text-emerald-700' },
-  observada: { label: 'Observada', class: 'bg-red-100 text-red-700' },
+  creada:       { label: 'Creada',       class: 'bg-slate-100 text-slate-600 border-slate-200',      dot: 'bg-slate-400',   step: 0 },
+  asignada:     { label: 'Asignada',     class: 'bg-blue-50 text-blue-700 border-blue-200',           dot: 'bg-blue-500',    step: 1 },
+  en_ejecucion: { label: 'En ejecución', class: 'bg-amber-50 text-amber-700 border-amber-200',        dot: 'bg-amber-500',   step: 2 },
+  finalizada:   { label: 'Finalizada',   class: 'bg-emerald-50 text-emerald-700 border-emerald-200',  dot: 'bg-emerald-500', step: 3 },
+  observada:    { label: 'Observada',    class: 'bg-red-50 text-red-700 border-red-200',              dot: 'bg-red-500',     step: -1 },
 };
 
-const WORKFLOW_STEPS = ['creada', 'asignada', 'en_ejecucion', 'finalizada'];
+const PRIORITY_MAP = {
+  alta:  { label: 'Alta',  class: 'bg-red-50 text-red-700 border-red-200' },
+  media: { label: 'Media', class: 'bg-amber-50 text-amber-700 border-amber-200' },
+  baja:  { label: 'Baja',  class: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+};
+
+const WORKFLOW = [
+  { key: 'creada',       label: 'Creada',       icon: Tag },
+  { key: 'asignada',     label: 'Asignada',     icon: User },
+  { key: 'en_ejecucion', label: 'En ejecución', icon: Play },
+  { key: 'finalizada',   label: 'Finalizada',   icon: CheckCircle2 },
+];
 
 export default function TaskDetail() {
   const { user } = useOutletContext();
@@ -51,10 +62,7 @@ export default function TaskDetail() {
   const canObserve = canObserveTask(communityRole);
 
   const statusMutation = useMutation({
-    mutationFn: ({ newStatus, extra }) => base44.entities.Task.update(taskId, {
-      status: newStatus,
-      ...extra,
-    }),
+    mutationFn: ({ newStatus, extra }) => base44.entities.Task.update(taskId, { status: newStatus, ...extra }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['task', taskId] });
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
@@ -62,130 +70,245 @@ export default function TaskDetail() {
     },
   });
 
-  const handleStartTask = () => {
-    statusMutation.mutate({ newStatus: 'en_ejecucion', extra: { started_at: new Date().toISOString() } });
-  };
-
-  const handleFinishTask = () => {
-    statusMutation.mutate({ newStatus: 'finalizada', extra: { finished_at: new Date().toISOString() } });
-  };
-
-  const handleObserve = () => {
-    statusMutation.mutate({ newStatus: 'observada', extra: { observation_note: observationNote } });
-    setObservationNote('');
-  };
+  const handleStartTask   = () => statusMutation.mutate({ newStatus: 'en_ejecucion', extra: { started_at: new Date().toISOString() } });
+  const handleFinishTask  = () => statusMutation.mutate({ newStatus: 'finalizada', extra: { finished_at: new Date().toISOString() } });
+  const handleObserve     = () => { statusMutation.mutate({ newStatus: 'observada', extra: { observation_note: observationNote } }); setObservationNote(''); };
 
   if (isLoading) {
-    return <div className="flex items-center justify-center py-20">
-      <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-    </div>;
+    return (
+      <div className="flex items-center justify-center py-24">
+        <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
   }
 
   if (!task) {
-    return <div className="text-center py-20">
-      <p className="text-muted-foreground">Tarea no encontrada</p>
-      <Link to="/tasks"><Button variant="outline" className="mt-4">Volver</Button></Link>
-    </div>;
+    return (
+      <div className="text-center py-20">
+        <p className="text-muted-foreground">Tarea no encontrada</p>
+        <Link to="/tasks"><Button variant="outline" className="mt-4">Volver</Button></Link>
+      </div>
+    );
   }
 
   const status = STATUS_MAP[task.status] || STATUS_MAP.creada;
-  const currentStepIndex = WORKFLOW_STEPS.indexOf(task.status);
-  const isOverdue = task.due_date && new Date(task.due_date) < new Date() && !['finalizada','observada'].includes(task.status);
+  const priority = PRIORITY_MAP[task.priority] || PRIORITY_MAP.media;
+  const currentStep = status.step;
+  const isOverdue = task.due_date && new Date(task.due_date) < new Date() && !['finalizada', 'observada'].includes(task.status);
+  const isObserved = task.status === 'observada';
+
+  // Progress percentage for bar
+  const progressPct = isObserved ? 100 : Math.max(0, Math.round((currentStep / 3) * 100));
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      <div className="flex items-center gap-3">
-        <Link to="/tasks"><Button variant="ghost" size="icon"><ArrowLeft className="h-4 w-4" /></Button></Link>
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold">{task.title}</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <Badge className={status.class} variant="secondary">{status.label}</Badge>
-            {isOverdue && <Badge className="bg-red-100 text-red-700">Vencida</Badge>}
+    <div className="space-y-5 max-w-4xl animate-in fade-in duration-300">
+
+      {/* ── Back + Title ── */}
+      <div className="flex items-start gap-3">
+        <Link to="/tasks">
+          <Button variant="ghost" size="icon" className="mt-0.5 shrink-0">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </Link>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-md border", status.class)}>
+              {status.label}
+            </span>
+            <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-md border", priority.class)}>
+              {priority.label}
+            </span>
+            {isOverdue && (
+              <span className="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2.5 py-1 rounded-md flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" /> Vencida
+              </span>
+            )}
           </div>
+          <h1 className="text-2xl font-bold text-foreground mt-2">{task.title}</h1>
+          {task.community_name && (
+            <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
+              <Building2 className="h-3.5 w-3.5" /> {task.community_name}
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Workflow progress */}
-      <Card className="p-4">
-        <p className="text-sm font-medium mb-3">Flujo de trabajo</p>
-        <div className="flex items-center gap-1">
-          {WORKFLOW_STEPS.map((step, i) => {
-            const isCompleted = i <= currentStepIndex && task.status !== 'observada';
-            const isCurrent = step === task.status;
-            const stepLabels = { creada: 'Creada', asignada: 'Asignada', en_ejecucion: 'En ejecución', finalizada: 'Finalizada' };
+      {/* ── Progress / Workflow ── */}
+      <div className="bg-card border border-border rounded-xl p-5">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-semibold text-foreground">Progreso de la tarea</p>
+          <span className="text-sm font-bold text-primary">{isObserved ? '—' : `${progressPct}%`}</span>
+        </div>
+
+        {/* Progress bar */}
+        <div className="h-2 bg-muted rounded-full overflow-hidden mb-4">
+          <div
+            className={cn(
+              "h-full rounded-full transition-all duration-500",
+              isObserved ? "bg-red-500" : task.status === 'finalizada' ? "bg-emerald-500" : "bg-primary"
+            )}
+            style={{ width: `${isObserved ? 100 : progressPct}%` }}
+          />
+        </div>
+
+        {/* Step indicators */}
+        <div className="flex items-center">
+          {WORKFLOW.map((step, i) => {
+            const done    = !isObserved && currentStep > i;
+            const current = !isObserved && currentStep === i;
             return (
-              <React.Fragment key={step}>
-                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                  isCurrent ? 'bg-primary text-primary-foreground' : isCompleted ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-                }`}>
-                  {stepLabels[step]}
+              <React.Fragment key={step.key}>
+                <div className="flex flex-col items-center gap-1.5 flex-1">
+                  <div className={cn(
+                    "h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all",
+                    done    ? "bg-primary border-primary text-white" :
+                    current ? "bg-primary/10 border-primary text-primary" :
+                              "bg-muted border-border text-muted-foreground"
+                  )}>
+                    <step.icon className="h-3.5 w-3.5" />
+                  </div>
+                  <span className={cn(
+                    "text-[10px] font-medium text-center leading-tight hidden sm:block",
+                    done || current ? "text-foreground" : "text-muted-foreground"
+                  )}>{step.label}</span>
                 </div>
-                {i < WORKFLOW_STEPS.length - 1 && <div className={`h-0.5 w-6 ${isCompleted ? 'bg-primary' : 'bg-muted'}`} />}
+                {i < WORKFLOW.length - 1 && (
+                  <div className={cn("h-0.5 flex-1 -mt-4 mx-1 transition-colors", done ? "bg-primary" : "bg-border")} />
+                )}
               </React.Fragment>
             );
           })}
-          {task.status === 'observada' && (
+          {isObserved && (
             <>
-              <div className="h-0.5 w-6 bg-red-300" />
-              <div className="px-3 py-1.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Observada</div>
+              <div className="h-0.5 w-8 bg-red-300 mx-1 -mt-4" />
+              <div className="flex flex-col items-center gap-1.5">
+                <div className="h-8 w-8 rounded-full flex items-center justify-center border-2 bg-red-50 border-red-400 text-red-600">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                </div>
+                <span className="text-[10px] font-medium text-red-600 hidden sm:block">Observada</span>
+              </div>
             </>
           )}
         </div>
-      </Card>
+      </div>
 
-      {/* Action buttons */}
+      {/* ── Action buttons ── */}
       <div className="flex flex-wrap gap-3">
         {task.status === 'asignada' && canModifyStatus && (
-          <Button onClick={handleStartTask} disabled={statusMutation.isPending}>
-            <Play className="h-4 w-4 mr-2" /> Iniciar Tarea
+          <Button onClick={handleStartTask} disabled={statusMutation.isPending} className="gap-2">
+            <Play className="h-4 w-4" /> Iniciar Tarea
           </Button>
         )}
         {task.status === 'en_ejecucion' && canModifyStatus && (
-          <Button onClick={handleFinishTask} disabled={statusMutation.isPending}>
-            <CheckCircle className="h-4 w-4 mr-2" /> Finalizar Tarea
+          <Button onClick={handleFinishTask} disabled={statusMutation.isPending} className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+            <CheckCircle className="h-4 w-4" /> Finalizar Tarea
           </Button>
         )}
         {task.status === 'finalizada' && canObserve && (
-          <div className="flex items-end gap-3 w-full">
-            <div className="flex-1">
-              <Textarea
-                placeholder="Nota de observación..."
-                value={observationNote}
-                onChange={e => setObservationNote(e.target.value)}
-                rows={2}
-              />
-            </div>
-            <Button variant="destructive" onClick={handleObserve} disabled={statusMutation.isPending || !observationNote}>
-              <AlertTriangle className="h-4 w-4 mr-2" /> Marcar como Observada
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 w-full">
+            <Textarea
+              placeholder="Describe el motivo de la observación..."
+              value={observationNote}
+              onChange={e => setObservationNote(e.target.value)}
+              rows={2}
+              className="flex-1"
+            />
+            <Button
+              variant="destructive"
+              onClick={handleObserve}
+              disabled={statusMutation.isPending || !observationNote}
+              className="gap-2 shrink-0"
+            >
+              <AlertTriangle className="h-4 w-4" /> Marcar como Observada
             </Button>
           </div>
         )}
       </div>
 
-      {/* Task info */}
-      <div className="grid md:grid-cols-2 gap-6">
+      {/* ── Observation note ── */}
+      {task.observation_note && (
+        <div className="flex gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
+          <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-red-700">Observación del Comité</p>
+            <p className="text-sm text-red-800 mt-0.5">{task.observation_note}</p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Details + Evidence ── */}
+      <div className="grid md:grid-cols-2 gap-5">
+        {/* Details */}
         <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-base">Detalles</CardTitle></CardHeader>
-          <CardContent className="space-y-3">
-            {task.description && <div><p className="text-xs text-muted-foreground">Descripción</p><p className="text-sm">{task.description}</p></div>}
-            <div className="grid grid-cols-2 gap-3">
-              <div><p className="text-xs text-muted-foreground">Tipo</p><p className="text-sm capitalize">{task.task_type}</p></div>
-              <div><p className="text-xs text-muted-foreground">Prioridad</p><p className="text-sm capitalize">{task.priority}</p></div>
-              <div><p className="text-xs text-muted-foreground">Comunidad</p><p className="text-sm">{task.community_name || '-'}</p></div>
-              <div><p className="text-xs text-muted-foreground">Fecha comprometida</p><p className="text-sm">{task.due_date ? format(new Date(task.due_date), "d MMM yyyy", { locale: es }) : '-'}</p></div>
-            </div>
-            {task.assigned_to && (
-              <div><p className="text-xs text-muted-foreground">Responsable</p><p className="text-sm">{task.assigned_to_name || task.assigned_to}</p></div>
-            )}
-            {task.observation_note && (
-              <div className="p-3 rounded-lg bg-red-50 border border-red-200">
-                <p className="text-xs font-medium text-red-700">Observación del Comité</p>
-                <p className="text-sm text-red-800 mt-1">{task.observation_note}</p>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Detalles</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {task.description && (
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-1">Descripción</p>
+                <p className="text-sm text-foreground">{task.description}</p>
               </div>
             )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-start gap-2">
+                <Tag className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Tipo</p>
+                  <p className="text-sm font-medium capitalize">{task.task_type}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Prioridad</p>
+                  <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-md border", priority.class)}>
+                    {priority.label}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Fecha comprometida</p>
+                  <p className={cn("text-sm font-medium", isOverdue ? "text-red-600" : "text-foreground")}>
+                    {task.due_date ? format(new Date(task.due_date), "d 'de' MMMM yyyy", { locale: es }) : '—'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <User className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Responsable</p>
+                  <p className="text-sm font-medium">{task.assigned_to_name || task.assigned_to || '—'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Timestamps */}
+            <div className="pt-3 border-t border-border space-y-1.5">
+              <div className="flex justify-between">
+                <span className="text-xs text-muted-foreground">Creada</span>
+                <span className="text-xs font-medium">{format(new Date(task.created_date), "d MMM yyyy", { locale: es })}</span>
+              </div>
+              {task.started_at && (
+                <div className="flex justify-between">
+                  <span className="text-xs text-muted-foreground">Iniciada</span>
+                  <span className="text-xs font-medium">{format(new Date(task.started_at), "d MMM yyyy", { locale: es })}</span>
+                </div>
+              )}
+              {task.finished_at && (
+                <div className="flex justify-between">
+                  <span className="text-xs text-muted-foreground">Finalizada</span>
+                  <span className="text-xs font-medium text-emerald-600">{format(new Date(task.finished_at), "d MMM yyyy", { locale: es })}</span>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
+        {/* Evidence */}
         <div className="space-y-4">
           <EvidenceUpload taskId={taskId} communityId={task.community_id} userName={user?.full_name || user?.email} />
           <EvidenceList taskId={taskId} />
