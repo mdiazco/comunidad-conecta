@@ -1,6 +1,5 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { TrendingUp } from 'lucide-react';
 
 const colorMap = {
   blue:   { bg: 'bg-blue-50',   icon: 'text-blue-600',   border: 'border-blue-100',  dot: 'bg-blue-500' },
