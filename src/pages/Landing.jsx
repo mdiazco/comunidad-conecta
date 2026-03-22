@@ -71,11 +71,12 @@ export default function Landing() {
       {/* HEADER */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Building2 className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-slate-800 text-lg">Comunidad Conecta</span>
+          <div className="flex items-center">
+            <img
+              src="https://media.base44.com/images/public/69be92d9b179f726fbced205/06d8d1e40_image.png"
+              alt="Comunidad Conecta"
+              className="h-10 w-auto"
+            />
           </div>
           <Link
             to="/dashboard"
