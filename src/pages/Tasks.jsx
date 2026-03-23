@@ -268,11 +268,12 @@ export default function Tasks() {
       ) : (
         <div className="bg-card border border-border rounded-xl overflow-hidden">
           {/* Table header — desktop */}
-          <div className="hidden md:grid grid-cols-[8px_1fr_130px_90px_160px_100px] items-center gap-4 px-5 py-2.5 bg-muted/40 border-b border-border">
+          <div className="hidden md:grid grid-cols-[8px_1fr_130px_90px_120px_160px_100px] items-center gap-4 px-5 py-2.5 bg-muted/40 border-b border-border">
             <span />
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tarea</span>
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Estado</span>
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Prioridad</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Avance</span>
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Responsable</span>
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Fecha</span>
           </div>
@@ -289,7 +290,7 @@ export default function Tasks() {
                   key={task.id}
                   to={`/tasks/${task.id}`}
                   className={cn(
-                    "flex flex-col md:grid md:grid-cols-[8px_1fr_130px_90px_160px_100px] items-center gap-3 md:gap-4 px-5 py-3.5 hover:bg-accent/40 transition-colors group",
+                    "flex flex-col md:grid md:grid-cols-[8px_1fr_130px_90px_120px_160px_100px] items-center gap-3 md:gap-4 px-5 py-3.5 hover:bg-accent/40 transition-colors group",
                     overdue && "border-l-2 border-l-red-400"
                   )}
                 >
