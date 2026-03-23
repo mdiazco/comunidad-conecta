@@ -72,8 +72,29 @@ export default function TaskDetail() {
   });
 
   const handleStartTask   = () => statusMutation.mutate({ newStatus: 'en_ejecucion', extra: { started_at: new Date().toISOString() } });
-  const handleFinishTask  = () => statusMutation.mutate({ newStatus: 'finalizada', extra: { finished_at: new Date().toISOString() } });
+  const handleFinishTask  = () => statusMutation.mutate({ newStatus: 'finalizada', extra: { finished_at: new Date().toISOString(), progress: 100 } });
   const handleObserve     = () => { statusMutation.mutate({ newStatus: 'observada', extra: { observation_note: observationNote } }); setObservationNote(''); };
+
+  const progressMutation = useMutation({
+    mutationFn: (pct) => base44.entities.Task.update(taskId, { progress: pct }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  });
+
+  const handleProgressChange = (delta) => {
+    const current = localProgress !== null ? localProgress : (task?.progress ?? 0);
+    const next = Math.min(100, Math.max(0, current + delta));
+    setLocalProgress(next);
+  };
+
+  const handleProgressSave = () => {
+    if (localProgress !== null) {
+      progressMutation.mutate(localProgress);
+      setLocalProgress(null);
+    }
+  };
 
   if (isLoading) {
     return (
