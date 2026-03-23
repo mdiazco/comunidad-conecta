@@ -333,6 +333,28 @@ export default function Tasks() {
                     {priority.label}
                   </span>
 
+                  {/* Progress */}
+                  <div className="w-[120px] shrink-0 hidden md:block">
+                    {task.status === 'finalizada' ? (
+                      <div className="flex items-center gap-1.5">
+                        <div className="flex-1 h-1.5 bg-emerald-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-emerald-500 rounded-full w-full" />
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-600">100%</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className={cn("h-full rounded-full transition-all", (task.progress ?? 0) >= 75 ? "bg-primary" : (task.progress ?? 0) >= 40 ? "bg-amber-500" : "bg-primary/50")}
+                            style={{ width: `${task.progress ?? 0}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] font-semibold text-muted-foreground tabular-nums">{task.progress ?? 0}%</span>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Assignee */}
                   <div className="flex items-center gap-1.5 w-[160px] shrink-0">
                     {task.assigned_to_name ? (
