@@ -159,25 +159,76 @@ export default function TaskDetail() {
       </div>
 
       {/* ── Progress / Workflow ── */}
-      <div className="bg-card border border-border rounded-xl p-5">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-semibold text-foreground">Progreso de la tarea</p>
-          <span className="text-sm font-bold text-primary">{isObserved ? '—' : `${progressPct}%`}</span>
-        </div>
+      <div className="bg-card border border-border rounded-xl p-5 space-y-4">
 
-        {/* Progress bar */}
-        <div className="h-2 bg-muted rounded-full overflow-hidden mb-4">
-          <div
-            className={cn(
-              "h-full rounded-full transition-all duration-500",
-              isObserved ? "bg-red-500" : task.status === 'finalizada' ? "bg-emerald-500" : "bg-primary"
-            )}
-            style={{ width: `${isObserved ? 100 : progressPct}%` }}
-          />
+        {/* Manual progress control */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm font-semibold text-foreground">% de Avance</p>
+            <div className="flex items-center gap-2">
+              <span className={cn(
+                "text-2xl font-bold tabular-nums",
+                displayedProgress === 100 ? "text-emerald-600" : isObserved ? "text-red-500" : "text-primary"
+              )}>
+                {displayedProgress}%
+              </span>
+              {displayedProgress === 100 && !isObserved && (
+                <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">Completado</span>
+              )}
+            </div>
+          </div>
+
+          {/* Bar */}
+          <div className="h-3 bg-muted rounded-full overflow-hidden mb-3">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all duration-500",
+                isObserved ? "bg-red-500" : displayedProgress === 100 ? "bg-emerald-500" : displayedProgress >= 75 ? "bg-primary" : displayedProgress >= 40 ? "bg-amber-500" : "bg-primary"
+              )}
+              style={{ width: `${displayedProgress}%` }}
+            />
+          </div>
+
+          {/* Slider controls — only for active tasks */}
+          {!isFinished && !isObserved && canModifyStatus && (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                {[10, 25, 50].map(step => (
+                  <button
+                    key={`-${step}`}
+                    onClick={() => handleProgressChange(-step)}
+                    disabled={displayedProgress <= 0}
+                    className="px-2 py-1 text-xs rounded-md border border-border bg-background hover:bg-muted transition-colors disabled:opacity-30"
+                  >-{step}</button>
+                ))}
+              </div>
+              <input
+                type="range" min={0} max={100} step={5}
+                value={displayedProgress}
+                onChange={e => setLocalProgress(Number(e.target.value))}
+                className="flex-1 accent-primary"
+              />
+              <div className="flex items-center gap-1">
+                {[10, 25, 50].map(step => (
+                  <button
+                    key={`+${step}`}
+                    onClick={() => handleProgressChange(step)}
+                    disabled={displayedProgress >= 100}
+                    className="px-2 py-1 text-xs rounded-md border border-border bg-background hover:bg-muted transition-colors disabled:opacity-30"
+                  >+{step}</button>
+                ))}
+              </div>
+              {isDirty && (
+                <Button size="sm" onClick={handleProgressSave} disabled={progressMutation.isPending} className="text-xs h-7 px-3">
+                  Guardar
+                </Button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Step indicators */}
-        <div className="flex items-center">
+        <div className="flex items-center pt-2 border-t border-border">
           {WORKFLOW.map((step, i) => {
             const done    = !isObserved && currentStep > i;
             const current = !isObserved && currentStep === i;
