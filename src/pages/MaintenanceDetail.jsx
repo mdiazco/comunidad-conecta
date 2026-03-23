@@ -115,11 +115,11 @@ export default function MaintenanceDetail() {
         {/* Meta grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-5 pt-5 border-t border-border">
           {[
-            { icon: Wrench,       label: 'Tipo',            value: maintenance.type === 'preventiva' ? 'Preventiva' : 'Correctiva' },
-            { icon: Repeat,       label: 'Frecuencia',      value: FREQ_LABELS[maintenance.frequency] },
-            { icon: CalendarClock,label: 'Próx. ejecución', value: maintenance.next_execution ? format(new Date(maintenance.next_execution), "d MMM yyyy", { locale: es }) : '—' },
-            { icon: User,         label: 'Responsable',     value: maintenance.assigned_to_name || 'Sin asignar' },
-          ].map(({ icon: Icon, label, value }) => (
+            { Icon: Wrench,        label: 'Tipo',            value: maintenance.type === 'preventiva' ? 'Preventiva' : 'Correctiva' },
+            { Icon: Repeat,        label: 'Frecuencia',      value: FREQ_LABELS[maintenance.frequency] },
+            { Icon: CalendarClock, label: 'Próx. ejecución', value: maintenance.next_execution ? format(new Date(maintenance.next_execution), "d MMM yyyy", { locale: es }) : '—' },
+            { Icon: User,          label: 'Responsable',     value: maintenance.assigned_to_name || 'Sin asignar' },
+          ].map(({ Icon, label, value }) => (
             <div key={label}>
               <p className="text-xs text-muted-foreground mb-1">{label}</p>
               <div className="flex items-center gap-1.5">
