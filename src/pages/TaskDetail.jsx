@@ -118,9 +118,12 @@ export default function TaskDetail() {
   const currentStep = status.step;
   const isOverdue = task.due_date && new Date(task.due_date) < new Date() && !['finalizada', 'observada'].includes(task.status);
   const isObserved = task.status === 'observada';
+  const isFinished = task.status === 'finalizada';
 
-  // Progress percentage for bar
-  const progressPct = isObserved ? 100 : Math.max(0, Math.round((currentStep / 3) * 100));
+  // Manual progress (0-100)
+  const progressPct = isFinished ? 100 : (localProgress !== null ? localProgress : (task.progress ?? 0));
+  const displayedProgress = isFinished ? 100 : progressPct;
+  const isDirty = localProgress !== null && localProgress !== (task.progress ?? 0);
 
   return (
     <div className="space-y-5 max-w-4xl animate-in fade-in duration-300">
