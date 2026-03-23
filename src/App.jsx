@@ -19,6 +19,8 @@ import UsersManagement from '@/pages/UsersManagement';
 import Notifications from '@/pages/Notifications';
 import Settings from '@/pages/Settings';
 import Suppliers from '@/pages/Suppliers';
+import Maintenances from '@/pages/Maintenances';
+import MaintenanceDetail from '@/pages/MaintenanceDetail';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -57,6 +59,8 @@ const AuthenticatedApp = () => {
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/suppliers" element={<Suppliers />} />
+        <Route path="/maintenances" element={<Maintenances />} />
+        <Route path="/maintenances/:id" element={<MaintenanceDetail />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
