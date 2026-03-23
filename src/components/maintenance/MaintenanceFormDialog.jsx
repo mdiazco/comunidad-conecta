@@ -34,7 +34,7 @@ function calcNextExecution(startDate, frequency, frequencyDays) {
 
 const EMPTY = {
   name: '', description: '', type: 'preventiva', frequency: 'mensual',
-  frequency_days: '', start_date: '', assigned_to: '', assigned_to_name: '',
+  frequency_days: '', start_date: '', next_execution: '', assigned_to: '', assigned_to_name: '',
   community_id: '', community_name: '', active: true,
 };
 
