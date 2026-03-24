@@ -42,6 +42,7 @@ export default function TaskDetail() {
   const taskId = window.location.pathname.split('/tasks/')[1];
   const [observationNote, setObservationNote] = useState('');
   const [localProgress, setLocalProgress] = useState(null);
+  const [scoreOpen, setScoreOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: task, isLoading } = useQuery({
