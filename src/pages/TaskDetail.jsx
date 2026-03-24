@@ -273,6 +273,11 @@ export default function TaskDetail() {
 
       {/* ── Action buttons ── */}
       <div className="flex flex-wrap gap-3">
+        {(task.status === 'finalizada' || task.status === 'observada') && canObserve && (
+          <Button variant="outline" onClick={() => setScoreOpen(true)} className="gap-2 border-amber-200 text-amber-700 hover:bg-amber-50">
+            <Star className="h-4 w-4" /> Evaluar Proveedor
+          </Button>
+        )}
         {task.status === 'asignada' && canModifyStatus && (
           <Button onClick={handleStartTask} disabled={statusMutation.isPending} className="gap-2">
             <Play className="h-4 w-4" /> Iniciar Tarea
