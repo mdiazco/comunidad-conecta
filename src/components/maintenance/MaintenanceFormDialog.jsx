@@ -106,7 +106,14 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
       toast.error('Completa los campos obligatorios');
       return;
     }
-    mutation.mutate(form);
+    const payload = { ...form };
+    // Clean up empty optional fields to avoid API type errors
+    if (!payload.frequency_days) delete payload.frequency_days;
+    if (!payload.assigned_to) delete payload.assigned_to;
+    if (!payload.assigned_to_name) delete payload.assigned_to_name;
+    if (!payload.next_execution) delete payload.next_execution;
+    if (!payload.last_execution) delete payload.last_execution;
+    mutation.mutate(payload);
   };
 
   return (
