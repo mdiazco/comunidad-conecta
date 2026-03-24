@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import EvidenceUpload from '@/components/evidence/EvidenceUpload';
 import EvidenceList from '@/components/evidence/EvidenceList';
 import ChecklistPanel from '@/components/tasks/ChecklistPanel';
+import ScoreDialog from '@/components/providers/ScoreDialog';
 import { isSuperAdmin, canObserveTask, canStartFinishTask } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 
