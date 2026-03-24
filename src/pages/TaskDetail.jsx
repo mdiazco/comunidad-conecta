@@ -11,6 +11,7 @@ import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
 import EvidenceUpload from '@/components/evidence/EvidenceUpload';
 import EvidenceList from '@/components/evidence/EvidenceList';
+import ChecklistPanel from '@/components/tasks/ChecklistPanel';
 import { isSuperAdmin, canObserveTask, canStartFinishTask } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 
