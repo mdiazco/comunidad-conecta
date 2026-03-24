@@ -10,13 +10,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { addDays, addMonths, addYears, format } from 'date-fns';
+import ChecklistEditor from './ChecklistEditor';
 
 const FREQ_OPTIONS = [
-  { value: 'mensual',      label: 'Mensual' },
-  { value: 'trimestral',   label: 'Trimestral (3 meses)' },
-  { value: 'semestral',    label: 'Semestral (6 meses)' },
-  { value: 'anual',        label: 'Anual' },
-  { value: 'personalizada',label: 'Personalizada (días)' },
+  { value: 'mensual',       label: 'Mensual' },
+  { value: 'trimestral',    label: 'Trimestral (3 meses)' },
+  { value: 'semestral',     label: 'Semestral (6 meses)' },
+  { value: 'anual',         label: 'Anual' },
+  { value: 'personalizada', label: 'Personalizada (días)' },
 ];
 
 function calcNextExecution(startDate, frequency, frequencyDays) {
@@ -35,7 +36,7 @@ function calcNextExecution(startDate, frequency, frequencyDays) {
 const EMPTY = {
   name: '', description: '', type: 'preventiva', frequency: 'mensual',
   frequency_days: '', start_date: '', next_execution: '', assigned_to: '', assigned_to_name: '',
-  community_id: '', community_name: '', active: true,
+  community_id: '', community_name: '', active: true, checklist_items: [],
 };
 
 export default function MaintenanceFormDialog({ open, onOpenChange, maintenance = null, defaultCommunityId = '' }) {
@@ -56,14 +57,10 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
   useEffect(() => {
     if (open) {
       if (maintenance) {
-        setForm({ ...EMPTY, ...maintenance });
+        setForm({ ...EMPTY, ...maintenance, checklist_items: maintenance.checklist_items || [] });
       } else {
         const comm = communities.find(c => c.id === defaultCommunityId);
-        setForm({
-          ...EMPTY,
-          community_id: defaultCommunityId,
-          community_name: comm?.name || '',
-        });
+        setForm({ ...EMPTY, community_id: defaultCommunityId, community_name: comm?.name || '' });
       }
     }
   }, [open, maintenance, defaultCommunityId, communities]);
@@ -71,7 +68,6 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
   const set = (field, value) => {
     setForm(f => {
       const updated = { ...f, [field]: value };
-      // recalculate next_execution when relevant fields change
       if (['start_date', 'frequency', 'frequency_days'].includes(field)) {
         updated.next_execution = calcNextExecution(
           field === 'start_date' ? value : updated.start_date,
@@ -115,7 +111,7 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{maintenance ? 'Editar Mantención' : 'Nueva Mantención'}</DialogTitle>
         </DialogHeader>
@@ -156,7 +152,6 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
             </div>
           </div>
 
-          {/* Días personalizados */}
           {form.frequency === 'personalizada' && (
             <div className="space-y-1.5">
               <Label>Cada cuántos días</Label>
@@ -164,7 +159,7 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
             </div>
           )}
 
-          {/* Fecha inicio + Próxima ejecución */}
+          {/* Fechas */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Fecha de inicio <span className="text-red-500">*</span></Label>
@@ -191,7 +186,9 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
           <div className="space-y-1.5">
             <Label>Responsable</Label>
             <Select value={form.assigned_to} onValueChange={v => set('assigned_to', v)} disabled={!form.community_id}>
-              <SelectTrigger><SelectValue placeholder={form.community_id ? 'Selecciona responsable' : 'Primero selecciona comunidad'} /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder={form.community_id ? 'Selecciona responsable' : 'Primero selecciona comunidad'} />
+              </SelectTrigger>
               <SelectContent>
                 {members.map(m => (
                   <SelectItem key={m.user_email} value={m.user_email}>
@@ -200,6 +197,14 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Checklist */}
+          <div className="border border-border rounded-lg p-3 space-y-3">
+            <ChecklistEditor
+              items={form.checklist_items}
+              onChange={items => set('checklist_items', items)}
+            />
           </div>
 
           {/* Activa */}
