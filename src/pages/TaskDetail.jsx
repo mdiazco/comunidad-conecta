@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, Play, CheckCircle, AlertTriangle, Clock, User, Building2, Calendar, Tag, CheckCircle2, Minus, Plus } from 'lucide-react';
+import { ArrowLeft, Play, CheckCircle, AlertTriangle, Clock, User, Building2, Calendar, Tag, CheckCircle2, Minus, Plus, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
