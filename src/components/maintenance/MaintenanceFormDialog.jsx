@@ -98,6 +98,9 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
       toast.success(maintenance ? 'Mantención actualizada' : 'Mantención creada');
       onOpenChange(false);
     },
+    onError: (err) => {
+      toast.error('Error al guardar: ' + (err?.message || 'intenta de nuevo'));
+    },
   });
 
   const handleSubmit = (e) => {
