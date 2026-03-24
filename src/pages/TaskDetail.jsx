@@ -313,6 +313,11 @@ export default function TaskDetail() {
         </div>
       )}
 
+      {/* ── Checklist (if task from maintenance) ── */}
+      {(task.checklist_items?.length > 0) && (
+        <ChecklistPanel task={task} canEdit={canModifyStatus && task.status === 'en_ejecucion'} />
+      )}
+
       {/* ── Details + Evidence ── */}
       <div className="grid md:grid-cols-2 gap-5">
         {/* Details */}
