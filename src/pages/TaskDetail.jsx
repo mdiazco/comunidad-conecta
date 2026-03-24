@@ -320,6 +320,8 @@ export default function TaskDetail() {
         </div>
       )}
 
+      <ScoreDialog open={scoreOpen} onOpenChange={setScoreOpen} task={task} user={user} />
+
       {/* ── Checklist (if task from maintenance) ── */}
       {(task.checklist_items?.length > 0) && (
         <ChecklistPanel task={task} canEdit={canModifyStatus && task.status === 'en_ejecucion'} />
