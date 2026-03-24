@@ -21,6 +21,7 @@ import Settings from '@/pages/Settings';
 import Suppliers from '@/pages/Suppliers';
 import Maintenances from '@/pages/Maintenances';
 import MaintenanceDetail from '@/pages/MaintenanceDetail';
+import Providers from '@/pages/Providers';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
