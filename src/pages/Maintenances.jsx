@@ -6,6 +6,7 @@ import {
   Plus, Search, Wrench, CalendarClock, CheckCircle2,
   AlertTriangle, Clock, Pencil, Trash2, ToggleLeft, ToggleRight, ChevronRight
 } from 'lucide-react';
+import { SYSTEM_LABELS, SYSTEM_ICONS, getCurrentYear } from '@/lib/expertChecklists';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -45,6 +46,7 @@ export default function Maintenances() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [filterYear, setFilterYear] = useState(String(getCurrentYear()));
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
 
@@ -68,8 +70,12 @@ export default function Maintenances() {
       m.name?.toLowerCase().includes(search.toLowerCase()) ||
       m.community_name?.toLowerCase().includes(search.toLowerCase());
     const matchType = filterType === 'all' || m.type === filterType;
-    return matchSearch && matchType;
+    const matchYear = filterYear === 'all' || String(m.year || getCurrentYear()) === filterYear;
+    return matchSearch && matchType && matchYear;
   });
+
+  const currentYear = getCurrentYear();
+  const years = [...new Set(maintenances.map(m => m.year || currentYear))].sort((a, b) => b - a);
 
   const overdue = maintenances.filter(m => getUrgency(m) === 'overdue').length;
   const soon    = maintenances.filter(m => getUrgency(m) === 'soon').length;
@@ -129,7 +135,7 @@ export default function Maintenances() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input placeholder="Buscar por nombre o comunidad..." className="pl-8 h-8 text-sm" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {[
             { value: 'all', label: 'Todos' },
             { value: 'preventiva', label: 'Preventiva' },
@@ -145,6 +151,11 @@ export default function Maintenances() {
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
               )}
             >{f.label}</button>
+          ))}
+          <div className="h-5 w-px bg-border mx-1 self-center" />
+          <button onClick={() => setFilterYear('all')} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-colors", filterYear === 'all' ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:bg-muted/80")}>Todos los años</button>
+          {years.map(y => (
+            <button key={y} onClick={() => setFilterYear(String(y))} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-colors", filterYear === String(y) ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:bg-muted/80")}>{y}</button>
           ))}
         </div>
       </div>
