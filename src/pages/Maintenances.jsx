@@ -189,8 +189,8 @@ export default function Maintenances() {
       ) : (
         <div className="bg-card border border-border rounded-xl overflow-hidden">
           {/* Header */}
-          <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1.5fr_auto] gap-4 px-5 py-2.5 bg-muted/40 border-b border-border">
-            {['Mantención', 'Tipo / Frecuencia', 'Próx. Ejecución', 'Responsable', ''].map(h => (
+          <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_1.5fr_auto] gap-4 px-5 py-2.5 bg-muted/40 border-b border-border">
+            {['Mantención', 'Sistema', 'Tipo / Frecuencia', 'Próx. Ejecución', 'Responsable', ''].map(h => (
               <span key={h} className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{h}</span>
             ))}
           </div>
@@ -202,7 +202,7 @@ export default function Maintenances() {
               const days = m.next_execution ? differenceInDays(new Date(m.next_execution), new Date()) : null;
 
               return (
-                <div key={m.id} className="group flex flex-col md:grid md:grid-cols-[2fr_1fr_1fr_1.5fr_auto] items-center gap-3 md:gap-4 px-5 py-4 hover:bg-accent/30 transition-colors">
+              <div key={m.id} className="group flex flex-col md:grid md:grid-cols-[2fr_1fr_1fr_1fr_1.5fr_auto] items-center gap-3 md:gap-4 px-5 py-4 hover:bg-accent/30 transition-colors">
                   {/* Name */}
                   <div className="flex items-center gap-3 w-full">
                     <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", urg.dot)} />
@@ -221,6 +221,15 @@ export default function Maintenances() {
                       <span className="text-xs font-medium px-2 py-0.5 rounded-md border bg-slate-50 text-slate-500 border-slate-200 shrink-0">
                         Inactiva
                       </span>
+                    )}
+                  </div>
+
+                  {/* Sistema */}
+                  <div>
+                    {m.system_type ? (
+                      <span className="text-sm">{SYSTEM_ICONS[m.system_type] || '🔧'} <span className="text-xs text-muted-foreground">{SYSTEM_LABELS[m.system_type]}</span></span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground/40">—</span>
                     )}
                   </div>
 
