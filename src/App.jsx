@@ -24,7 +24,6 @@ import MaintenanceDetail from '@/pages/MaintenanceDetail';
 import Providers from '@/pages/Providers';
 import Contracts from '@/pages/Contracts';
 import BuildingHealth from '@/pages/BuildingHealth';
-// Pages imported above
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
