@@ -47,7 +47,12 @@ export default function GenerateTaskDialog({ open, onOpenChange, maintenance }) 
         evidence_note: '',
       }));
 
-      await base44.entities.Task.create({
+      const currentYear = new Date().getFullYear();
+      const endDate = `${currentYear}-12-31`;
+      // Validate due date is within current year
+      const validDueDate = dueDate && dueDate <= endDate ? dueDate : endDate;
+
+      const taskData = {
         title: maintenance.name,
         description: maintenance.description || '',
         task_type: 'preventiva',
@@ -56,12 +61,17 @@ export default function GenerateTaskDialog({ open, onOpenChange, maintenance }) 
         progress: 0,
         community_id: maintenance.community_id,
         community_name: maintenance.community_name,
-        assigned_to: maintenance.assigned_to || '',
-        assigned_to_name: maintenance.assigned_to_name || '',
-        due_date: dueDate,
+        due_date: validDueDate,
         procedure_id: maintenance.id,
         checklist_items: checklistForTask,
-      });
+        origin: 'mantencion',
+        year: maintenance.year || currentYear,
+      };
+      if (maintenance.assigned_to) taskData.assigned_to = maintenance.assigned_to;
+      if (maintenance.assigned_to_name) taskData.assigned_to_name = maintenance.assigned_to_name;
+      if (maintenance.provider_id) taskData.provider_id = maintenance.provider_id;
+      if (maintenance.provider_name) taskData.provider_name = maintenance.provider_name;
+      await base44.entities.Task.create(taskData);
 
       // Advance next_execution
       const nextExec = calcNext(maintenance);
