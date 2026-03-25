@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Building2, Users, ClipboardList, 
-  FileText, Bell, Settings, LogOut, ChevronLeft, ChevronRight, X, Store, Wrench, Star
+  FileText, Bell, Settings, LogOut, ChevronLeft, ChevronRight, X, Store, Wrench, Star, FileSignature, HeartPulse
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -17,6 +17,8 @@ const NAV_ITEMS = [
   { path: '/suppliers', icon: Store, label: 'Proveedores' },
   { path: '/maintenances', icon: Wrench, label: 'Mantenciones' },
   { path: '/providers', icon: Star, label: 'Scoring Proveedores' },
+  { path: '/contracts', icon: FileSignature, label: 'Contratos' },
+  { path: '/building-health', icon: HeartPulse, label: 'Salud del Edificio' },
   { path: '/notifications', icon: Bell, label: 'Notificaciones' },
   { path: '/settings', icon: Settings, label: 'Mantenedores', superadminOnly: true },
 ];
