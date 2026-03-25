@@ -22,6 +22,8 @@ import Suppliers from '@/pages/Suppliers';
 import Maintenances from '@/pages/Maintenances';
 import MaintenanceDetail from '@/pages/MaintenanceDetail';
 import Providers from '@/pages/Providers';
+import Contracts from '@/pages/Contracts';
+import BuildingHealth from '@/pages/BuildingHealth';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -63,6 +65,8 @@ const AuthenticatedApp = () => {
         <Route path="/maintenances" element={<Maintenances />} />
         <Route path="/maintenances/:id" element={<MaintenanceDetail />} />
         <Route path="/providers" element={<Providers />} />
+        <Route path="/contracts" element={<Contracts />} />
+        <Route path="/building-health" element={<BuildingHealth />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
