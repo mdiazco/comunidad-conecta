@@ -2,7 +2,9 @@ import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Building2, ClipboardList, Users, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Building2, ClipboardList, Users, AlertTriangle, CheckCircle2, Wrench, HeartPulse } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { differenceInDays } from 'date-fns';
 import StatsCard from '@/components/dashboard/StatsCard';
 import TaskSemaphore from '@/components/dashboard/TaskSemaphore';
 import RecentTasksList from '@/components/dashboard/RecentTasksList';
@@ -29,6 +31,11 @@ export default function Dashboard() {
     enabled: isAdmin,
   });
 
+  const { data: maintenances = [] } = useQuery({
+    queryKey: ['maintenances'],
+    queryFn: () => base44.entities.Maintenance.list('-created_date', 200),
+  });
+
   const { data: myMemberships = [] } = useQuery({
     queryKey: ['my-memberships', user?.email],
     queryFn: () => base44.entities.CommunityMember.filter({ user_email: user?.email, status: 'active' }),
@@ -45,6 +52,13 @@ export default function Dashboard() {
     t.due_date && new Date(t.due_date) < new Date() && !['finalizada', 'observada'].includes(t.status)
   );
   const completedTasks = visibleTasks.filter(t => t.status === 'finalizada');
+
+  const now = new Date();
+  const overdueMaintenances = maintenances.filter(m => m.active && m.next_execution && differenceInDays(new Date(m.next_execution), now) < 0);
+  const soonMaintenances = maintenances.filter(m => m.active && m.next_execution && differenceInDays(new Date(m.next_execution), now) >= 0 && differenceInDays(new Date(m.next_execution), now) <= 7);
+  const healthStatus = overdueMaintenances.length > 0 ? 'red' : soonMaintenances.length > 0 ? 'yellow' : 'green';
+  const healthLabel = { green: 'Óptimo', yellow: 'Atención', red: 'Crítico' }[healthStatus];
+  const healthColors = { green: 'text-emerald-600 bg-emerald-50 border-emerald-200', yellow: 'text-amber-600 bg-amber-50 border-amber-200', red: 'text-red-600 bg-red-50 border-red-200' };
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
@@ -77,6 +91,20 @@ export default function Dashboard() {
           <StatsCard title="Usuarios" value={members.length} icon={Users} color="gray" subtitle="Miembros activos" />
         )}
       </div>
+
+      {/* Building Health Banner */}
+      <Link to="/building-health" className={`flex items-center gap-4 px-5 py-4 rounded-xl border ${healthColors[healthStatus]} hover:opacity-80 transition-opacity cursor-pointer`}>
+        <HeartPulse className="h-6 w-6 shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold">Salud del Edificio: {healthLabel}</p>
+          <p className="text-xs opacity-80">
+            {overdueMaintenances.length > 0 ? `${overdueMaintenances.length} mantención${overdueMaintenances.length !== 1 ? 'es' : ''} vencida${overdueMaintenances.length !== 1 ? 's' : ''}` :
+             soonMaintenances.length > 0 ? `${soonMaintenances.length} mantención${soonMaintenances.length !== 1 ? 'es' : ''} próxima${soonMaintenances.length !== 1 ? 's' : ''} (7 días)` :
+             'Todas las mantenciones están al día'}
+          </p>
+        </div>
+        <span className="text-xs font-semibold opacity-70">Ver detalle →</span>
+      </Link>
 
       {/* Semaphore + Recent */}
       <div className="grid lg:grid-cols-3 gap-5">
