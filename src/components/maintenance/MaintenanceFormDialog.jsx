@@ -114,10 +114,12 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
   const loadExpertChecklist = () => {
     if (!form.system_type) { toast.error('Selecciona un sistema técnico primero'); return; }
     const items = EXPERT_CHECKLISTS[form.system_type];
-    if (items) {
-      setForm(f => ({ ...f, checklist_items: items }));
-      toast.success(`Checklist experto cargado: ${items.length} ítems para ${SYSTEM_LABELS[form.system_type]}`);
+    if (!items) return;
+    if (form.checklist_items?.length > 0) {
+      if (!window.confirm(`¿Reemplazar el checklist actual (${form.checklist_items.length} ítems) con el checklist experto de ${SYSTEM_LABELS[form.system_type]}?`)) return;
     }
+    setForm(f => ({ ...f, checklist_items: items }));
+    toast.success(`Checklist experto cargado: ${items.length} ítems para ${SYSTEM_LABELS[form.system_type]}`);
   };
 
   const mutation = useMutation({
