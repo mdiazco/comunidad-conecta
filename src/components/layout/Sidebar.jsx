@@ -20,8 +20,7 @@ const NAV_ITEMS = [
   { path: '/building-health', icon: HeartPulse,       label: 'Salud del Edificio', module: 'salud' },
   { path: '/users',           icon: Users,            label: 'Usuarios',          module: 'usuarios' },
   { path: '/notifications',   icon: Bell,             label: 'Notificaciones',    module: 'notificaciones' },
-  { path: '/roles',           icon: Shield,           label: 'Roles y Permisos',  superadminOnly: true, alwaysVisible: true },
-  { path: '/settings',        icon: Settings,         label: 'Mantenedores',      superadminOnly: true, alwaysVisible: true },
+
 ];
 
 export default function Sidebar({ user, rbac, collapsed, setCollapsed, mobileOpen, setMobileOpen, unreadCount }) {
