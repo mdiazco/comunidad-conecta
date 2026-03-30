@@ -53,7 +53,13 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
     queryFn: () => base44.entities.CommunityMember.filter({ community_id: form.community_id }),
     enabled: !!form.community_id,
   });
-  const { data: providers = [] } = useQuery({ queryKey: ['providers'], queryFn: () => base44.entities.Provider.list() });
+  const { data: providers = [] } = useQuery({
+    queryKey: ['providers', form.community_id],
+    queryFn: () => form.community_id
+      ? base44.entities.Provider.filter({ community_id: form.community_id, status: 'active' })
+      : base44.entities.Provider.list(),
+    enabled: true,
+  });
 
   useEffect(() => {
     if (open) {
@@ -90,6 +96,8 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
         updated.community_name = comm?.name || '';
         updated.assigned_to = '';
         updated.assigned_to_name = '';
+        updated.provider_id = '';
+        updated.provider_name = '';
       }
       if (field === 'assigned_to') {
         const member = members.find(m => m.user_email === value);
@@ -244,10 +252,12 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
             </div>
             <div className="space-y-1.5">
               <Label>Proveedor externo</Label>
-              <Select value={form.provider_id || ''} onValueChange={v => set('provider_id', v)}>
-                <SelectTrigger><SelectValue placeholder="Selecciona proveedor" /></SelectTrigger>
+              <Select value={form.provider_id || ''} onValueChange={v => set('provider_id', v)} disabled={!form.community_id}>
+                <SelectTrigger>
+                  <SelectValue placeholder={form.community_id ? 'Selecciona proveedor' : 'Primero comunidad'} />
+                </SelectTrigger>
                 <SelectContent>
-                  {providers.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                  {providers.map(p => <SelectItem key={p.id} value={p.id}>{p.name} — {p.service_type}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
