@@ -70,6 +70,14 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
   const set = (field, value) => {
     setForm(f => {
       const updated = { ...f, [field]: value };
+      if (field === 'system_type' && value !== 'otro') {
+        updated.name = SYSTEM_LABELS[value] || '';
+        updated.description = '';
+      }
+      if (field === 'system_type' && value === 'otro') {
+        updated.name = '';
+        updated.description = '';
+      }
       if (['start_date', 'frequency', 'frequency_days'].includes(field)) {
         updated.next_execution = calcNextExecution(
           field === 'start_date' ? value : updated.start_date,
@@ -116,7 +124,7 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
 
   const handleSubmit = e => {
     e.preventDefault();
-    if (!form.name.trim() || !form.community_id || !form.start_date) {
+    if ((form.system_type === 'otro' && !form.name.trim()) || !form.community_id || !form.start_date) {
       toast.error('Completa los campos obligatorios');
       return;
     }
@@ -152,17 +160,19 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
             </Select>
           </div>
 
-          {/* Nombre */}
-          <div className="space-y-1.5">
-            <Label>Nombre <span className="text-red-500">*</span></Label>
-            <Input placeholder="Ej: Mantención ascensor mensual" value={form.name} onChange={e => set('name', e.target.value)} />
-          </div>
-
-          {/* Descripción */}
-          <div className="space-y-1.5">
-            <Label>Descripción</Label>
-            <Textarea placeholder="Detalle de la mantención..." rows={2} value={form.description} onChange={e => set('description', e.target.value)} className="resize-none" />
-          </div>
+          {/* Nombre y Descripción solo para "otro" */}
+          {form.system_type === 'otro' && (
+            <>
+              <div className="space-y-1.5">
+                <Label>Nombre <span className="text-red-500">*</span></Label>
+                <Input placeholder="Ej: Mantención ascensor mensual" value={form.name} onChange={e => set('name', e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Descripción</Label>
+                <Textarea placeholder="Detalle de la mantención..." rows={2} value={form.description} onChange={e => set('description', e.target.value)} className="resize-none" />
+              </div>
+            </>
+          )}
 
           {/* Tipo + Frecuencia */}
           <div className="grid grid-cols-2 gap-3">
