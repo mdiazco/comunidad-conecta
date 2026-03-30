@@ -9,8 +9,10 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import CommunityFormDialog from '@/components/communities/CommunityFormDialog';
 
+import PermissionGate from '@/components/rbac/PermissionGate';
+
 export default function Communities() {
-  const { user } = useOutletContext();
+  const { user, rbac } = useOutletContext();
   const [search, setSearch] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -25,16 +27,22 @@ export default function Communities() {
     c.comuna?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const canCreate = rbac ? rbac.can('comunidad', 'crear') : true;
+  const canEdit = rbac ? rbac.can('comunidad', 'editar') : true;
+
   return (
+    <PermissionGate can={rbac ? rbac.canView('comunidad') : true} showBlocked>
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Comunidades</h1>
           <p className="text-muted-foreground">Gestión de comunidades residenciales</p>
         </div>
-        <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
-          <Plus className="h-4 w-4 mr-2" /> Nueva Comunidad
-        </Button>
+        {canCreate && (
+          <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
+            <Plus className="h-4 w-4 mr-2" /> Nueva Comunidad
+          </Button>
+        )}
       </div>
 
       <div className="relative max-w-sm">
@@ -91,14 +99,16 @@ export default function Communities() {
                     <Eye className="h-3.5 w-3.5 mr-1" /> Ver
                   </Button>
                 </Link>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => { setEditing(community); setFormOpen(true); }}
-                >
-                  <Edit className="h-3.5 w-3.5 mr-1" /> Editar
-                </Button>
+                {canEdit && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => { setEditing(community); setFormOpen(true); }}
+                  >
+                    <Edit className="h-3.5 w-3.5 mr-1" /> Editar
+                  </Button>
+                )}
               </div>
             </Card>
           ))}
@@ -111,5 +121,6 @@ export default function Communities() {
         community={editing}
       />
     </div>
+    </PermissionGate>
   );
 }

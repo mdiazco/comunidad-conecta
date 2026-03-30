@@ -2,31 +2,42 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Building2, Users, ClipboardList, 
-  FileText, Bell, Settings, LogOut, ChevronLeft, ChevronRight, X, Store, Wrench, Star, FileSignature, HeartPulse
+  FileText, Bell, Settings, LogOut, ChevronLeft, ChevronRight, X, Store, Wrench, Star, FileSignature, HeartPulse, Shield
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 
+// module key must match MODULES in useRBAC.js
 const NAV_ITEMS = [
-  { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/communities', icon: Building2, label: 'Comunidades', superadminOnly: true },
-  { path: '/tasks', icon: ClipboardList, label: 'Tareas' },
-  { path: '/procedures', icon: FileText, label: 'Procedimientos' },
-  { path: '/users', icon: Users, label: 'Usuarios' },
-  { path: '/suppliers', icon: Store, label: 'Proveedores' },
-  { path: '/maintenances', icon: Wrench, label: 'Mantenciones' },
-  { path: '/providers', icon: Star, label: 'Scoring Proveedores' },
-  { path: '/contracts', icon: FileSignature, label: 'Contratos' },
-  { path: '/building-health', icon: HeartPulse, label: 'Salud del Edificio' },
-  { path: '/notifications', icon: Bell, label: 'Notificaciones' },
-  { path: '/settings', icon: Settings, label: 'Mantenedores', superadminOnly: true },
+  { path: '/dashboard',       icon: LayoutDashboard, label: 'Dashboard',         module: 'dashboard' },
+  { path: '/communities',     icon: Building2,        label: 'Comunidades',       module: 'comunidad',      superadminOnly: true },
+  { path: '/tasks',           icon: ClipboardList,    label: 'Tareas',            module: 'tareas' },
+  { path: '/maintenances',    icon: Wrench,           label: 'Mantenciones',      module: 'mantenciones' },
+  { path: '/procedures',      icon: FileText,         label: 'Procedimientos',    module: 'procedimientos' },
+  { path: '/providers',       icon: Star,             label: 'Scoring Proveedores', module: 'proveedores' },
+  { path: '/suppliers',       icon: Store,            label: 'Proveedores',       module: 'proveedores' },
+  { path: '/contracts',       icon: FileSignature,    label: 'Contratos',         module: 'contratos' },
+  { path: '/building-health', icon: HeartPulse,       label: 'Salud del Edificio', module: 'salud' },
+  { path: '/users',           icon: Users,            label: 'Usuarios',          module: 'usuarios' },
+  { path: '/notifications',   icon: Bell,             label: 'Notificaciones',    module: 'notificaciones' },
+  { path: '/roles',           icon: Shield,           label: 'Roles y Permisos',  superadminOnly: true, alwaysVisible: true },
+  { path: '/settings',        icon: Settings,         label: 'Mantenedores',      superadminOnly: true, alwaysVisible: true },
 ];
 
-export default function Sidebar({ user, collapsed, setCollapsed, mobileOpen, setMobileOpen, unreadCount }) {
+export default function Sidebar({ user, rbac, collapsed, setCollapsed, mobileOpen, setMobileOpen, unreadCount }) {
   const location = useLocation();
-  const isSuperAdmin = user?.role === 'superadmin' || user?.role === 'admin';
-  const filteredItems = NAV_ITEMS.filter(item => !item.superadminOnly || isSuperAdmin);
+  const isSuperAdmin = rbac?.isSuperAdmin ?? (user?.role === 'superadmin' || user?.role === 'admin');
+  const isImpersonating = rbac?.isImpersonating ?? false;
+
+  const filteredItems = NAV_ITEMS.filter(item => {
+    // superadminOnly + alwaysVisible: show to superadmin always (even when impersonating)
+    if (item.superadminOnly && item.alwaysVisible) return isSuperAdmin;
+    // superadminOnly: show only to superadmin and only when NOT impersonating
+    if (item.superadminOnly) return isSuperAdmin && !isImpersonating;
+    // RBAC check: if module is defined, check canView
+    if (item.module && rbac) return rbac.canView(item.module);
+    return true;
+  });
 
   const handleLogout = () => base44.auth.logout('/');
 
@@ -99,7 +110,9 @@ export default function Sidebar({ user, collapsed, setCollapsed, mobileOpen, set
               <p className="text-sm font-medium text-sidebar-foreground truncate leading-tight">
                 {user.full_name || user.email}
               </p>
-              <p className="text-xs text-sidebar-foreground/40 truncate">{user.role}</p>
+              <p className="text-xs text-sidebar-foreground/40 truncate">
+                {isImpersonating ? rbac?.impersonatedRole?.name : (user.role || 'usuario')}
+              </p>
             </div>
           </div>
         )}

@@ -24,6 +24,7 @@ import MaintenanceDetail from '@/pages/MaintenanceDetail';
 import Providers from '@/pages/Providers';
 import Contracts from '@/pages/Contracts';
 import BuildingHealth from '@/pages/BuildingHealth';
+import RolesManagement from '@/pages/RolesManagement';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -67,6 +68,7 @@ const AuthenticatedApp = () => {
         <Route path="/providers" element={<Providers />} />
         <Route path="/contracts" element={<Contracts />} />
         <Route path="/building-health" element={<BuildingHealth />} />
+        <Route path="/roles" element={<RolesManagement />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

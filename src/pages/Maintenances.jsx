@@ -42,7 +42,11 @@ const URGENCY = {
   inactive: { dot: 'bg-slate-300',  badge: '',                                              label: '' },
 };
 
+import PermissionGate from '@/components/rbac/PermissionGate';
+import { useOutletContext } from 'react-router-dom';
+
 export default function Maintenances() {
+  const { rbac } = useOutletContext() || {};
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
@@ -84,7 +88,10 @@ export default function Maintenances() {
   const handleEdit = (m) => { setEditing(m); setFormOpen(true); };
   const handleNew  = () => { setEditing(null); setFormOpen(true); };
 
+  const canCreate = rbac ? rbac.can('mantenciones', 'crear') : true;
+
   return (
+    <PermissionGate can={rbac ? rbac.canView('mantenciones') : true} showBlocked>
     <div className="space-y-5 animate-in fade-in duration-300">
 
       {/* Header */}
@@ -95,9 +102,11 @@ export default function Maintenances() {
             Planifica y automatiza las mantenciones preventivas y correctivas de tu comunidad.
           </p>
         </div>
-        <Button onClick={handleNew} className="gap-2 shadow-sm shrink-0">
-          <Plus className="h-4 w-4" /> Nueva Mantención
-        </Button>
+        {canCreate && (
+          <Button onClick={handleNew} className="gap-2 shadow-sm shrink-0">
+            <Plus className="h-4 w-4" /> Nueva Mantención
+          </Button>
+        )}
       </div>
 
       {/* Stats */}
@@ -308,5 +317,6 @@ export default function Maintenances() {
 
       <MaintenanceFormDialog open={formOpen} onOpenChange={setFormOpen} maintenance={editing} />
     </div>
+    </PermissionGate>
   );
 }

@@ -1,0 +1,27 @@
+{
+  "name": "Role",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre del rol"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n del rol"
+    },
+    "is_system": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si es un rol del sistema (no editable)"
+    },
+    "permissions": {
+      "type": "object",
+      "description": "Permisos por m\u00f3dulo: { comunidad: {ver, crear, editar, eliminar}, tareas: {...}, mantenciones: {...}, procedimientos: {...}, proveedores: {...}, contratos: {...}, usuarios: {...}, salud: {...} }",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

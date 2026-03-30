@@ -43,8 +43,10 @@ const STAT_TABS = [
   { key: 'observada',   label: 'Observadas',  icon: Eye,           color: 'text-orange-600',bg: 'bg-orange-50', activeBg:'bg-orange-600', border:'border-orange-200' },
 ];
 
+import PermissionGate from '@/components/rbac/PermissionGate';
+
 export default function Tasks() {
-  const { user } = useOutletContext();
+  const { user, rbac } = useOutletContext();
   const isAdmin = isSuperAdmin(user);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -110,7 +112,10 @@ export default function Tasks() {
 
   const hasFilters = search || statusFilter !== 'all' || priorityFilter !== 'all' || assigneeFilter !== 'all';
 
+  const canCreate = rbac ? rbac.can('tareas', 'crear') : true;
+
   return (
+    <PermissionGate can={rbac ? rbac.canView('tareas') : true} showBlocked>
     <div className="space-y-5 animate-in fade-in duration-300">
 
       {/* ── Header ── */}
@@ -122,9 +127,11 @@ export default function Tasks() {
             con seguimiento en tiempo real y control total de responsables y plazos.
           </p>
         </div>
-        <Button onClick={() => setFormOpen(true)} className="gap-2 shadow-sm shrink-0 mt-1">
-          <Plus className="h-4 w-4" /> Nueva Tarea
-        </Button>
+        {canCreate && (
+          <Button onClick={() => setFormOpen(true)} className="gap-2 shadow-sm shrink-0 mt-1">
+            <Plus className="h-4 w-4" /> Nueva Tarea
+          </Button>
+        )}
       </div>
 
       {/* ── Stat tabs / mini-dashboard ── */}
@@ -406,5 +413,6 @@ export default function Tasks() {
 
       <TaskFormDialog open={formOpen} onOpenChange={setFormOpen} />
     </div>
+    </PermissionGate>
   );
 }
