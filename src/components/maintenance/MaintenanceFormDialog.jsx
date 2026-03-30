@@ -161,7 +161,7 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
 
           {/* Sistema técnico */}
           <div className="space-y-1.5">
-            <Label>Sistema técnico</Label>
+            <Label>Tipo Mantención</Label>
             <Select value={form.system_type || ''} onValueChange={v => set('system_type', v)}>
               <SelectTrigger><SelectValue placeholder="Selecciona sistema (opcional)" /></SelectTrigger>
               <SelectContent>
