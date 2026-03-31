@@ -81,12 +81,7 @@ export default function Landing() {
               className="h-12 w-auto"
             />
           </div>
-          <button
-            onClick={handleLogin}
-            className="flex items-center gap-2 bg-primary text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
-          >
-            Ingreso a la plataforma <ChevronRight className="w-4 h-4" />
-          </button>
+
         </div>
       </header>
 
@@ -135,15 +130,6 @@ export default function Landing() {
 
         {/* Contenido del hero */}
         <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
-          {/* Logo grande en el hero */}
-          <div className="flex justify-center mb-6">
-            <img
-              src="https://media.base44.com/images/public/69be92d9b179f726fbced205/6eda2364a_comunidad-removebg-preview1.png"
-              alt="Comunidad Conecta"
-              className="h-36 w-auto drop-shadow-2xl"
-            />
-          </div>
-
           <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-6 drop-shadow-lg">
             Conecta tu comunidad.<br />
             <span className="text-blue-400">Gestiona sin fricciones.</span>
