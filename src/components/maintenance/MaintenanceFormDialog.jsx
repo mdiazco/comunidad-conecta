@@ -268,7 +268,10 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
           {/* Checklist */}
           <div className="border border-border rounded-lg p-3 space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-foreground">Checklist</p>
+              <div>
+                <p className="text-sm font-medium text-foreground">Checklist</p>
+                <p className="text-xs text-muted-foreground">Opcional — puedes cargar el experto o agregar ítems manualmente</p>
+              </div>
               <Button type="button" variant="outline" size="sm" onClick={loadExpertChecklist} className="gap-1.5 h-7 text-xs border-primary/30 text-primary hover:bg-primary/5">
                 <Sparkles className="h-3 w-3" /> Cargar checklist experto
               </Button>
