@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Building2, ClipboardList, Users, Shield, ChevronRight, CheckCircle2, Bell, FileText, Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 const features = [
   {
@@ -47,6 +48,8 @@ export default function Landing() {
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(true);
 
+  const handleLogin = () => base44.auth.redirectToLogin('/dashboard');
+
   const toggleMute = () => {
     if (videoRef.current) {
       videoRef.current.muted = !muted;
@@ -78,12 +81,12 @@ export default function Landing() {
               className="h-10 w-auto"
             />
           </div>
-          <Link
-            to="/dashboard"
+          <button
+            onClick={handleLogin}
             className="flex items-center gap-2 bg-primary text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
           >
-            Ingresar al sistema <ChevronRight className="w-4 h-4" />
-          </Link>
+            Ingreso a la plataforma <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
       </header>
 
@@ -146,12 +149,12 @@ export default function Landing() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/dashboard"
+            <button
+              onClick={handleLogin}
               className="bg-primary text-white font-bold px-10 py-4 rounded-2xl hover:bg-primary/90 transition-all text-base flex items-center justify-center gap-2 shadow-2xl shadow-primary/40"
             >
-              Ingresar al sistema <ChevronRight className="w-5 h-5" />
-            </Link>
+              Ingreso a la plataforma <ChevronRight className="w-5 h-5" />
+            </button>
             <a
               href="#features"
               className="bg-white/15 text-white font-semibold px-10 py-4 rounded-2xl hover:bg-white/25 transition-all text-base border border-white/30 backdrop-blur-sm"
@@ -231,12 +234,12 @@ export default function Landing() {
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Listo para conectar tu comunidad</h2>
           <p className="text-blue-100 text-lg mb-8">Accede al panel de administración y empieza a gestionar tus comunidades hoy mismo.</p>
-          <Link
-            to="/dashboard"
+          <button
+            onClick={handleLogin}
             className="inline-flex items-center gap-2 bg-white text-primary font-bold px-8 py-3.5 rounded-xl hover:bg-blue-50 transition-colors text-base shadow-lg"
           >
-            <CheckCircle2 className="w-5 h-5" /> Ingresar al sistema
-          </Link>
+            <CheckCircle2 className="w-5 h-5" /> Ingreso a la plataforma
+          </button>
         </div>
       </section>
 
