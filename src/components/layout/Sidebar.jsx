@@ -47,15 +47,15 @@ export default function Sidebar({ user, rbac, collapsed, setCollapsed, mobileOpe
       )}>
         {collapsed ? (
           <img
-            src="https://media.base44.com/images/public/69be92d9b179f726fbced205/06d8d1e40_image.png"
+            src="https://media.base44.com/images/public/69be92d9b179f726fbced205/6eda2364a_comunidad-removebg-preview1.png"
             alt="CC"
-            className="h-8 w-8 object-contain"
+            className="h-9 w-9 object-contain"
           />
         ) : (
           <img
-            src="https://media.base44.com/images/public/69be92d9b179f726fbced205/06d8d1e40_image.png"
+            src="https://media.base44.com/images/public/69be92d9b179f726fbced205/6eda2364a_comunidad-removebg-preview1.png"
             alt="Comunidad Conecta"
-            className="h-9 w-auto object-contain brightness-0 invert"
+            className="h-11 w-auto object-contain"
           />
         )}
       </div>

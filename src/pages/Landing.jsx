@@ -76,9 +76,9 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center">
             <img
-              src="https://media.base44.com/images/public/69be92d9b179f726fbced205/06d8d1e40_image.png"
+              src="https://media.base44.com/images/public/69be92d9b179f726fbced205/6eda2364a_comunidad-removebg-preview1.png"
               alt="Comunidad Conecta"
-              className="h-10 w-auto"
+              className="h-12 w-auto"
             />
           </div>
           <button
@@ -135,9 +135,14 @@ export default function Landing() {
 
         {/* Contenido del hero */}
         <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
-          <span className="inline-block bg-primary/30 text-blue-200 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 border border-primary/40 backdrop-blur-sm">
-            ✦ Plataforma de gestión residencial
-          </span>
+          {/* Logo grande en el hero */}
+          <div className="flex justify-center mb-6">
+            <img
+              src="https://media.base44.com/images/public/69be92d9b179f726fbced205/6eda2364a_comunidad-removebg-preview1.png"
+              alt="Comunidad Conecta"
+              className="h-36 w-auto drop-shadow-2xl"
+            />
+          </div>
 
           <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-6 drop-shadow-lg">
             Conecta tu comunidad.<br />
