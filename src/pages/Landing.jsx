@@ -75,11 +75,7 @@ export default function Landing() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center">
-            <img
-              src="https://media.base44.com/images/public/69be92d9b179f726fbced205/6eda2364a_comunidad-removebg-preview1.png"
-              alt="Comunidad Conecta"
-              className="h-12 w-auto"
-            />
+            <span className="text-slate-800 font-bold text-lg tracking-tight">Comunidad Conecta</span>
           </div>
 
         </div>
