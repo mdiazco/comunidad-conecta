@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import RecentTasksList from '@/components/dashboard/RecentTasksList';
 import TaskSemaphore from '@/components/dashboard/TaskSemaphore';
+import MaintenanceSemaphore from '@/components/dashboard/MaintenanceSemaphore';
 import TaskFormDialog from '@/components/tasks/TaskFormDialog';
 import MaintenanceFormDialog from '@/components/maintenance/MaintenanceFormDialog';
 
@@ -126,6 +127,7 @@ export default function CommunityDetail() {
               <Plus className="h-4 w-4 mr-1" /> Nueva Mantención
             </Button>
           </div>
+          <MaintenanceSemaphore maintenances={maintenances} />
           <Card>
             <CardContent className="p-4">
               {maintenances.length === 0 ? (

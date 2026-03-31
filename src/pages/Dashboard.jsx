@@ -2,9 +2,11 @@ import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Building2, Users, Sparkles } from 'lucide-react';
+import { Building2, Users, Sparkles, Wrench } from 'lucide-react';
 import { isSuperAdmin } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
+import TaskSemaphore from '@/components/dashboard/TaskSemaphore';
+import MaintenanceSemaphore from '@/components/dashboard/MaintenanceSemaphore';
 
 const STAT_COLORS = {
   blue: {
@@ -68,6 +70,16 @@ export default function Dashboard() {
     enabled: isAdmin,
   });
 
+  const { data: tasks = [] } = useQuery({
+    queryKey: ['tasks'],
+    queryFn: () => base44.entities.Task.list('-created_date'),
+  });
+
+  const { data: maintenances = [] } = useQuery({
+    queryKey: ['maintenances'],
+    queryFn: () => base44.entities.Maintenance.list('-created_date'),
+  });
+
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
   const greetingEmoji = hour < 12 ? '☀️' : hour < 19 ? '👋' : '🌙';
@@ -119,6 +131,15 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Semáforos */}
+      <div>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Estado operacional</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <TaskSemaphore tasks={tasks} />
+          <MaintenanceSemaphore maintenances={maintenances} />
+        </div>
+      </div>
     </div>
   );
 }
