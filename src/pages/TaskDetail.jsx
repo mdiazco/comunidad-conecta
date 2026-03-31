@@ -342,7 +342,7 @@ export default function TaskDetail() {
 
       {/* ── Checklist (if task from maintenance) ── */}
       {(task.checklist_items?.length > 0) && (
-        <ChecklistPanel task={task} canEdit={canModifyStatus && ['asignada', 'en_ejecucion'].includes(task.status)} />
+        <ChecklistPanel task={task} canEdit={(canModifyStatus || isAdmin) && !['finalizada', 'observada', 'cerrada_fin_año'].includes(task.status)} />
       )}
 
       {/* ── Details + Evidence ── */}
