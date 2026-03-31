@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { useOutletContext, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useOutletContext, Link, useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
   Plus, Search, ClipboardList, CheckCircle2, AlertTriangle,
-  Clock, PlayCircle, Eye, Filter, X, ArrowRight, Pencil
+  Clock, PlayCircle, Eye, Filter, X, ArrowRight, Pencil, Trash2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,6 +47,8 @@ const STAT_TABS = [
 export default function Tasks() {
   const { user, rbac } = useOutletContext();
   const isAdmin = isSuperAdmin(user);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
@@ -54,6 +56,11 @@ export default function Tasks() {
   const [activeTab, setActiveTab] = useState('all');
   const [formOpen, setFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.Task.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+  });
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['tasks'],
@@ -295,7 +302,7 @@ export default function Tasks() {
         ) : (
           <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
             {/* Table header */}
-            <div className="hidden md:grid grid-cols-[10px_1fr_140px_100px_130px_170px_110px] items-center gap-4 px-5 py-3 bg-muted/40 border-b border-border">
+            <div className="hidden md:grid grid-cols-[10px_1fr_140px_100px_130px_170px_120px_100px] items-center gap-4 px-5 py-3 bg-muted/40 border-b border-border">
               <span />
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Tarea</span>
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider text-center">Estado</span>
@@ -303,6 +310,7 @@ export default function Tasks() {
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider text-center">Avance</span>
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Responsable</span>
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider text-center">Fecha</span>
+              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider text-center">Acciones</span>
             </div>
 
             <div className="divide-y divide-border">
@@ -313,13 +321,13 @@ export default function Tasks() {
                 const upcoming = isUpcomingFn(task);
 
                 return (
-                  <Link
+                  <div
                     key={task.id}
-                    to={`/tasks/${task.id}`}
                     className={cn(
-                      "flex flex-col md:grid md:grid-cols-[10px_1fr_140px_100px_130px_170px_110px] items-center gap-3 md:gap-4 px-5 py-4 hover:bg-accent/50 transition-colors group",
+                      "flex flex-col md:grid md:grid-cols-[10px_1fr_140px_100px_130px_170px_120px_100px] items-center gap-3 md:gap-4 px-5 py-4 hover:bg-accent/50 transition-colors group cursor-pointer",
                       overdue && "border-l-[3px] border-l-red-400"
                     )}
+                    onClick={() => navigate(`/tasks/${task.id}`)}
                   >
                     {/* Status dot */}
                     <span className={cn("h-2.5 w-2.5 rounded-full shrink-0 hidden md:block", status.dot)} />
@@ -404,7 +412,7 @@ export default function Tasks() {
                     </div>
 
                     {/* Due date */}
-                    <div className="w-[110px] text-center shrink-0 flex items-center justify-center gap-2">
+                    <div className="w-[120px] text-center shrink-0 flex items-center justify-center">
                       {task.due_date ? (
                         <span className={cn(
                           "text-xs font-semibold",
@@ -415,17 +423,41 @@ export default function Tasks() {
                       ) : (
                         <span className="text-xs text-muted-foreground/30">—</span>
                       )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center justify-center gap-1" onClick={e => e.stopPropagation()}>
+                      <button
+                        onClick={() => navigate(`/tasks/${task.id}`)}
+                        className="p-1.5 rounded-lg hover:bg-blue-50 text-muted-foreground hover:text-blue-600 transition-colors"
+                        title="Ver detalle"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                      </button>
                       {canCreate && (
                         <button
-                          onClick={e => { e.preventDefault(); setEditingTask(task); setFormOpen(true); }}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+                          onClick={() => { setEditingTask(task); setFormOpen(true); }}
+                          className="p-1.5 rounded-lg hover:bg-amber-50 text-muted-foreground hover:text-amber-600 transition-colors"
                           title="Editar tarea"
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
                       )}
+                      {isAdmin && (
+                        <button
+                          onClick={() => {
+                            if (confirm('¿Eliminar esta tarea? Esta acción no se puede deshacer.')) {
+                              deleteMutation.mutate(task.id);
+                            }
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-600 transition-colors"
+                          title="Eliminar tarea"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                     </div>
-                    </Link>
+                    </div>
                 );
               })}
             </div>
