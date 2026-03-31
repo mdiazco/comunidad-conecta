@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
   Plus, Search, ClipboardList, CheckCircle2, AlertTriangle,
-  Clock, PlayCircle, Eye, Filter, X, ArrowRight
+  Clock, PlayCircle, Eye, Filter, X, ArrowRight, Pencil
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,6 +53,7 @@ export default function Tasks() {
   const [assigneeFilter, setAssigneeFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('all');
   const [formOpen, setFormOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['tasks'],
@@ -403,7 +404,7 @@ export default function Tasks() {
                     </div>
 
                     {/* Due date */}
-                    <div className="w-[110px] text-center shrink-0">
+                    <div className="w-[110px] text-center shrink-0 flex items-center justify-center gap-2">
                       {task.due_date ? (
                         <span className={cn(
                           "text-xs font-semibold",
@@ -414,8 +415,17 @@ export default function Tasks() {
                       ) : (
                         <span className="text-xs text-muted-foreground/30">—</span>
                       )}
+                      {canCreate && (
+                        <button
+                          onClick={e => { e.preventDefault(); setEditingTask(task); setFormOpen(true); }}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+                          title="Editar tarea"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                     </div>
-                  </Link>
+                    </Link>
                 );
               })}
             </div>
@@ -435,7 +445,11 @@ export default function Tasks() {
           </div>
         )}
 
-        <TaskFormDialog open={formOpen} onOpenChange={setFormOpen} />
+        <TaskFormDialog
+          open={formOpen}
+          onOpenChange={(v) => { setFormOpen(v); if (!v) setEditingTask(null); }}
+          task={editingTask}
+        />
       </div>
     </PermissionGate>
   );

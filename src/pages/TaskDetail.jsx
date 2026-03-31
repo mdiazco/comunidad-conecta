@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, Play, CheckCircle, AlertTriangle, Clock, User, Building2, Calendar, Tag, CheckCircle2, Minus, Plus, Star } from 'lucide-react';
+import { ArrowLeft, Play, CheckCircle, AlertTriangle, Clock, User, Building2, Calendar, Tag, CheckCircle2, Minus, Plus, Star, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,6 +14,7 @@ import EvidenceList from '@/components/evidence/EvidenceList';
 import ChecklistPanel from '@/components/tasks/ChecklistPanel';
 import ScoreDialog from '@/components/providers/ScoreDialog';
 import { isSuperAdmin, canObserveTask, canStartFinishTask } from '@/lib/permissions';
+import TaskFormDialog from '@/components/tasks/TaskFormDialog';
 import { cn } from '@/lib/utils';
 
 const STATUS_MAP = {
@@ -43,6 +44,7 @@ export default function TaskDetail() {
   const [observationNote, setObservationNote] = useState('');
   const [localProgress, setLocalProgress] = useState(null);
   const [scoreOpen, setScoreOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: task, isLoading } = useQuery({
@@ -146,17 +148,24 @@ export default function TaskDetail() {
           </Button>
         </Link>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-md border", status.class)}>
-              {status.label}
-            </span>
-            <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-md border", priority.class)}>
-              {priority.label}
-            </span>
-            {isOverdue && (
-              <span className="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2.5 py-1 rounded-md flex items-center gap-1">
-                <AlertTriangle className="h-3 w-3" /> Vencida
+          <div className="flex items-center gap-2 flex-wrap justify-between">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-md border", status.class)}>
+                {status.label}
               </span>
+              <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-md border", priority.class)}>
+                {priority.label}
+              </span>
+              {isOverdue && (
+                <span className="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2.5 py-1 rounded-md flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3" /> Vencida
+                </span>
+              )}
+            </div>
+            {(isAdmin || canModifyStatus) && (
+              <Button variant="outline" size="sm" className="gap-1.5 shrink-0" onClick={() => setEditOpen(true)}>
+                <Pencil className="h-3.5 w-3.5" /> Editar
+              </Button>
             )}
           </div>
           <h1 className="text-2xl font-bold text-foreground mt-2">{task.title}</h1>
@@ -339,6 +348,7 @@ export default function TaskDetail() {
       )}
 
       <ScoreDialog open={scoreOpen} onOpenChange={setScoreOpen} task={task} user={user} />
+      <TaskFormDialog open={editOpen} onOpenChange={setEditOpen} task={task} />
 
       {/* ── Checklist (if task from maintenance) ── */}
       {(task.checklist_items?.length > 0) && (
