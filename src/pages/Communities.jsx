@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Search, Building2, MapPin, Home, ArrowRight, Edit, LayoutGrid } from 'lucide-react';
+import { Plus, Search, Building2, MapPin, Home, ArrowRight, Edit, LayoutGrid, SlidersHorizontal, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import CommunityFormDialog from '@/components/communities/CommunityFormDialog';
 import PermissionGate from '@/components/rbac/PermissionGate';
 import { cn } from '@/lib/utils';
@@ -27,6 +28,10 @@ const BG_GRADIENTS = [
 export default function Communities() {
   const { user, rbac } = useOutletContext();
   const [search, setSearch] = useState('');
+  const [filterRegion, setFilterRegion] = useState('');
+  const [filterComuna, setFilterComuna] = useState('');
+  const [filterType, setFilterType] = useState('');
+  const [filterUnits, setFilterUnits] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
 
@@ -35,10 +40,33 @@ export default function Communities() {
     queryFn: () => base44.entities.Community.list('-created_date'),
   });
 
-  const filtered = communities.filter(c =>
-    c.name?.toLowerCase().includes(search.toLowerCase()) ||
-    c.comuna?.toLowerCase().includes(search.toLowerCase())
-  );
+  const regions = useMemo(() => [...new Set(communities.map(c => c.region).filter(Boolean))].sort(), [communities]);
+  const comunas = useMemo(() => [...new Set(communities.filter(c => !filterRegion || c.region === filterRegion).map(c => c.comuna).filter(Boolean))].sort(), [communities, filterRegion]);
+
+  const UNITS_RANGES = [
+    { value: '1-50',   label: '1 – 50 unidades',   min: 1,   max: 50 },
+    { value: '51-100', label: '51 – 100 unidades',  min: 51,  max: 100 },
+    { value: '101-200',label: '101 – 200 unidades', min: 101, max: 200 },
+    { value: '201+',   label: '201+ unidades',      min: 201, max: Infinity },
+  ];
+
+  const filtered = communities.filter(c => {
+    if (search && !c.name?.toLowerCase().includes(search.toLowerCase())) return false;
+    if (filterRegion && c.region !== filterRegion) return false;
+    if (filterComuna && c.comuna !== filterComuna) return false;
+    if (filterType && c.type !== filterType) return false;
+    if (filterUnits) {
+      const range = UNITS_RANGES.find(r => r.value === filterUnits);
+      if (range && (c.units < range.min || c.units > range.max)) return false;
+    }
+    return true;
+  });
+
+  const activeFilters = [filterRegion, filterComuna, filterType, filterUnits].filter(Boolean).length;
+
+  const clearFilters = () => {
+    setFilterRegion(''); setFilterComuna(''); setFilterType(''); setFilterUnits('');
+  };
 
   const canCreate = rbac ? rbac.can('comunidad', 'crear') : true;
   const canEdit   = rbac ? rbac.can('comunidad', 'editar') : true;
@@ -73,15 +101,79 @@ export default function Communities() {
           )}
         </div>
 
-        {/* Search bar */}
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nombre o comuna..."
-            className="pl-9 bg-card"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
+        {/* Search + Filters */}
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative max-w-sm w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nombre..."
+                className="pl-9 bg-card"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+            </div>
+
+            <div className="flex flex-wrap gap-2 items-center">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                <span className="font-medium">Filtros</span>
+              </div>
+
+              <Select value={filterRegion} onValueChange={v => { setFilterRegion(v === '__all__' ? '' : v); setFilterComuna(''); }}>
+                <SelectTrigger className={cn("h-8 text-xs w-44 bg-card", filterRegion && "border-primary/50 text-primary")}>
+                  <SelectValue placeholder="Región" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">Todas las regiones</SelectItem>
+                  {regions.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                </SelectContent>
+              </Select>
+
+              <Select value={filterComuna} onValueChange={v => setFilterComuna(v === '__all__' ? '' : v)}>
+                <SelectTrigger className={cn("h-8 text-xs w-40 bg-card", filterComuna && "border-primary/50 text-primary")}>
+                  <SelectValue placeholder="Comuna" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">Todas las comunas</SelectItem>
+                  {comunas.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+
+              <Select value={filterType} onValueChange={v => setFilterType(v === '__all__' ? '' : v)}>
+                <SelectTrigger className={cn("h-8 text-xs w-36 bg-card", filterType && "border-primary/50 text-primary")}>
+                  <SelectValue placeholder="Tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">Todos los tipos</SelectItem>
+                  <SelectItem value="edificio">Edificio</SelectItem>
+                  <SelectItem value="condominio">Condominio</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filterUnits} onValueChange={v => setFilterUnits(v === '__all__' ? '' : v)}>
+                <SelectTrigger className={cn("h-8 text-xs w-44 bg-card", filterUnits && "border-primary/50 text-primary")}>
+                  <SelectValue placeholder="N° Unidades" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">Todas las unidades</SelectItem>
+                  {UNITS_RANGES.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+
+              {activeFilters > 0 && (
+                <Button variant="ghost" size="sm" className="h-8 text-xs gap-1 text-muted-foreground hover:text-destructive" onClick={clearFilters}>
+                  <X className="h-3.5 w-3.5" /> Limpiar ({activeFilters})
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {filtered.length !== communities.length && (
+            <p className="text-xs text-muted-foreground">
+              Mostrando <span className="font-semibold text-foreground">{filtered.length}</span> de {communities.length} comunidades
+            </p>
+          )}
         </div>
 
         {/* Loading skeletons */}
