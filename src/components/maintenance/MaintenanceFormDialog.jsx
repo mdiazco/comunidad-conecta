@@ -226,7 +226,7 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
               <Input type="date" value={form.start_date} onChange={e => set('start_date', e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label>Vigencia Año en Curso</Label>
+              <Label>Vigencia anual</Label>
               <Input type="date" value={form.end_date} onChange={e => set('end_date', e.target.value)} />
             </div>
             <div className="space-y-1.5">
