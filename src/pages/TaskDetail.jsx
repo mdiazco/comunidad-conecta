@@ -123,10 +123,17 @@ export default function TaskDetail() {
   const isObserved = task.status === 'observada';
   const isFinished = task.status === 'finalizada';
 
-  // Manual progress (0-100)
+  // Checklist-driven progress
+  const hasChecklist = (task.checklist_items?.length ?? 0) > 0;
+  const checklistPct = hasChecklist
+    ? Math.round((task.checklist_items.filter(i => i.completed).length / task.checklist_items.length) * 100)
+    : null;
+
+  // Manual progress (0-100) — only used when no checklist
   const progressPct = isFinished ? 100 : (localProgress !== null ? localProgress : (task.progress ?? 0));
-  const displayedProgress = isFinished ? 100 : progressPct;
-  const isDirty = localProgress !== null && localProgress !== (task.progress ?? 0);
+  const displayedProgress = isFinished ? 100 : (hasChecklist ? checklistPct : progressPct);
+  const isDirty = !hasChecklist && localProgress !== null && localProgress !== (task.progress ?? 0);
+  const canFinish = !hasChecklist || checklistPct === 100;
 
   return (
     <div className="space-y-5 max-w-4xl animate-in fade-in duration-300">
@@ -192,8 +199,8 @@ export default function TaskDetail() {
             />
           </div>
 
-          {/* Slider controls — only for active tasks */}
-          {!isFinished && !isObserved && canModifyStatus && (
+          {/* Slider controls — only for active tasks WITHOUT checklist */}
+          {!isFinished && !isObserved && canModifyStatus && !hasChecklist && (
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
                 {[10, 25, 50].map(step => (
@@ -284,9 +291,20 @@ export default function TaskDetail() {
           </Button>
         )}
         {task.status === 'en_ejecucion' && canModifyStatus && (
-          <Button onClick={handleFinishTask} disabled={statusMutation.isPending} className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
-            <CheckCircle className="h-4 w-4" /> Finalizar Tarea
-          </Button>
+          <div className="flex flex-col gap-1">
+            <Button
+              onClick={handleFinishTask}
+              disabled={statusMutation.isPending || !canFinish}
+              className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
+            >
+              <CheckCircle className="h-4 w-4" /> Finalizar Tarea
+            </Button>
+            {hasChecklist && !canFinish && (
+              <p className="text-xs text-amber-600 text-center">
+                Completa el 100% del checklist para finalizar ({checklistPct}% completado)
+              </p>
+            )}
+          </div>
         )}
         {task.status === 'finalizada' && canObserve && (
           <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 w-full">

@@ -16,9 +16,10 @@ export default function ChecklistPanel({ task, canEdit }) {
   const pct = items.length > 0 ? Math.round((completed / items.length) * 100) : 0;
 
   const mutation = useMutation({
-    mutationFn: (newItems) => base44.entities.Task.update(task.id, { checklist_items: newItems }),
+    mutationFn: ({ newItems, newPct }) => base44.entities.Task.update(task.id, { checklist_items: newItems, progress: newPct }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['task', task.id] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
       queryClient.invalidateQueries({ queryKey: ['maintenance_tasks'] });
     },
   });
@@ -30,12 +31,15 @@ export default function ChecklistPanel({ task, canEdit }) {
       ? { ...i, completed: !i.completed, completed_at: !i.completed ? now : null }
       : i
     );
-    mutation.mutate(updated);
+    const newCompleted = updated.filter(i => i.completed).length;
+    const newPct = updated.length > 0 ? Math.round((newCompleted / updated.length) * 100) : 0;
+    mutation.mutate({ newItems: updated, newPct });
   };
 
   const saveNote = (id) => {
     const updated = items.map(i => i.id === id ? { ...i, evidence_note: noteText } : i);
-    mutation.mutate(updated);
+    const newPct = updated.length > 0 ? Math.round((updated.filter(i => i.completed).length / updated.length) * 100) : 0;
+    mutation.mutate({ newItems: updated, newPct });
     setExpandedNote(null);
     setNoteText('');
     toast.success('Nota guardada');
