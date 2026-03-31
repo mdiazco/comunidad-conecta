@@ -93,6 +93,25 @@ export default function UsersManagement() {
     },
   });
 
+  const changeRoleMutation = useMutation({
+    mutationFn: async ({ memberId, newRole, userEmail }) => {
+      await base44.entities.CommunityMember.update(memberId, { role: newRole });
+      const rbacRoleName = COMMUNITY_ROLE_TO_RBAC[newRole];
+      const rbacRole = roles.find(r => r.name === rbacRoleName);
+      if (rbacRole && userEmail) {
+        const matchingUser = allUsers.find(u => u.email === userEmail);
+        if (matchingUser) {
+          await base44.entities.User.update(matchingUser.id, { rbac_role_id: rbacRole.id });
+        }
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-members'] });
+      queryClient.invalidateQueries({ queryKey: ['all-users'] });
+      toast.success('Rol actualizado correctamente');
+    },
+  });
+
   const communityMap = {};
   communities.forEach(c => { communityMap[c.id] = c.name; });
 
@@ -156,7 +175,24 @@ export default function UsersManagement() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge className={`capitalize ${ROLE_COLORS[m.role] || ''}`} variant="secondary">{m.role}</Badge>
+                  {isAdmin ? (
+                    <Select
+                      value={m.role}
+                      onValueChange={v => changeRoleMutation.mutate({ memberId: m.id, newRole: v, userEmail: m.user_email })}
+                    >
+                      <SelectTrigger className="h-7 text-xs w-44">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="administrador">Administrador</SelectItem>
+                        <SelectItem value="equipo">Equipo Administrador</SelectItem>
+                        <SelectItem value="comite">Comité</SelectItem>
+                        <SelectItem value="operativo">Mayordomo / Operativo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Badge className={`capitalize ${ROLE_COLORS[m.role] || ''}`} variant="secondary">{m.role}</Badge>
+                  )}
                   {isAdmin && (
                     <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(m.id)}>
                       <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
