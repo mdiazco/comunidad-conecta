@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 
 const EMPTY = {
   community_id: '', title: '', description: '', task_type: 'preventiva',
-  priority: 'media', assigned_to: '', due_date: ''
+  priority: 'media', assigned_to: '', due_date: '', supplier_id: '', supplier_name: ''
 };
 
 export default function TaskFormDialog({ open, onOpenChange, task, communityId }) {
@@ -29,6 +29,11 @@ export default function TaskFormDialog({ open, onOpenChange, task, communityId }
     enabled: !!form.community_id,
   });
 
+  const { data: suppliers = [] } = useQuery({
+    queryKey: ['suppliers'],
+    queryFn: () => base44.entities.Supplier.list('-created_date'),
+  });
+
   useEffect(() => {
     if (task) {
       setForm({ ...EMPTY, ...task, due_date: task.due_date ? task.due_date.split('T')[0] : '' });
@@ -41,10 +46,12 @@ export default function TaskFormDialog({ open, onOpenChange, task, communityId }
     mutationFn: (data) => {
       const community = communities.find(c => c.id === data.community_id);
       const member = members.find(m => m.user_email === data.assigned_to);
+      const supplier = suppliers.find(s => s.id === data.supplier_id);
       const payload = {
         ...data,
         community_name: community?.name || '',
         assigned_to_name: member?.user_name || data.assigned_to,
+        supplier_name: supplier?.name || '',
         status: data.assigned_to ? 'asignada' : 'creada',
       };
       if (task) return base44.entities.Task.update(task.id, payload);
@@ -132,6 +139,20 @@ export default function TaskFormDialog({ open, onOpenChange, task, communityId }
               <Label>Fecha comprometida</Label>
               <Input type="date" value={form.due_date} onChange={e => set('due_date', e.target.value)} />
             </div>
+          </div>
+          <div>
+            <Label>Proveedor / Contratista</Label>
+            <Select value={form.supplier_id || ''} onValueChange={v => set('supplier_id', v)}>
+              <SelectTrigger><SelectValue placeholder="Sin proveedor asignado" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value={null}>Sin proveedor</SelectItem>
+                {suppliers.filter(s => s.status === 'active').map(s => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.name}{s.giro ? ` — ${s.giro}` : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>

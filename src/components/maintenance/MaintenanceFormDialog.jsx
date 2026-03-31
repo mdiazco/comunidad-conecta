@@ -61,6 +61,11 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
     enabled: true,
   });
 
+  const { data: suppliers = [] } = useQuery({
+    queryKey: ['suppliers'],
+    queryFn: () => base44.entities.Supplier.list('-created_date'),
+  });
+
   useEffect(() => {
     if (open) {
       const yr = getCurrentYear();
@@ -253,13 +258,25 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Proveedor externo</Label>
-              <Select value={form.provider_id || ''} onValueChange={v => set('provider_id', v)} disabled={!form.community_id}>
+              <Label>Proveedor / Contratista</Label>
+              <Select value={form.provider_id || ''} onValueChange={v => set('provider_id', v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder={form.community_id ? 'Selecciona proveedor' : 'Primero comunidad'} />
+                  <SelectValue placeholder="Selecciona proveedor o contratista" />
                 </SelectTrigger>
                 <SelectContent>
-                  {providers.map(p => <SelectItem key={p.id} value={p.id}>{p.name} — {p.service_type}</SelectItem>)}
+                  <SelectItem value={null}>Sin proveedor</SelectItem>
+                  {providers.length > 0 && (
+                    <>
+                      {providers.map(p => (
+                        <SelectItem key={`prov-${p.id}`} value={p.id}>{p.name} — {p.service_type}</SelectItem>
+                      ))}
+                    </>
+                  )}
+                  {suppliers.filter(s => s.status === 'active').map(s => (
+                    <SelectItem key={`sup-${s.id}`} value={s.id}>
+                      {s.name}{s.giro ? ` — ${s.giro}` : ''}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

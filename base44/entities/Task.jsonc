@@ -1,0 +1,153 @@
+{
+  "name": "Task",
+  "type": "object",
+  "properties": {
+    "community_id": {
+      "type": "string",
+      "description": "ID de la comunidad"
+    },
+    "title": {
+      "type": "string",
+      "description": "T\u00edtulo de la tarea"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n detallada"
+    },
+    "task_type": {
+      "type": "string",
+      "enum": [
+        "preventiva",
+        "emergencia",
+        "administrativa"
+      ],
+      "description": "Tipo de tarea"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "alta",
+        "media",
+        "baja"
+      ],
+      "description": "Prioridad"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "creada",
+        "asignada",
+        "en_ejecucion",
+        "finalizada",
+        "observada",
+        "cerrada_fin_a\u00f1o"
+      ],
+      "default": "creada",
+      "description": "Estado de la tarea"
+    },
+    "progress": {
+      "type": "number",
+      "default": 0,
+      "description": "Porcentaje de avance (0-100)"
+    },
+    "assigned_to": {
+      "type": "string",
+      "description": "Email del responsable asignado"
+    },
+    "assigned_to_name": {
+      "type": "string",
+      "description": "Nombre del responsable"
+    },
+    "provider_id": {
+      "type": "string",
+      "description": "ID del proveedor (entidad Provider) asignado"
+    },
+    "provider_name": {
+      "type": "string",
+      "description": "Nombre del proveedor (Provider)"
+    },
+    "supplier_id": {
+      "type": "string",
+      "description": "ID del contratista/proveedor (entidad Supplier)"
+    },
+    "supplier_name": {
+      "type": "string",
+      "description": "Nombre del contratista/proveedor (Supplier)"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha comprometida"
+    },
+    "year": {
+      "type": "number",
+      "description": "A\u00f1o de vigencia"
+    },
+    "origin": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "mantencion",
+        "procedimiento"
+      ],
+      "default": "manual",
+      "description": "Origen de la tarea"
+    },
+    "started_at": {
+      "type": "string",
+      "description": "Fecha de inicio de ejecuci\u00f3n"
+    },
+    "finished_at": {
+      "type": "string",
+      "description": "Fecha de finalizaci\u00f3n"
+    },
+    "observation_note": {
+      "type": "string",
+      "description": "Nota de observaci\u00f3n del comit\u00e9"
+    },
+    "procedure_id": {
+      "type": "string",
+      "description": "ID del procedimiento o mantenci\u00f3n asociada"
+    },
+    "community_name": {
+      "type": "string",
+      "description": "Nombre de la comunidad (cache)"
+    },
+    "checklist_items": {
+      "type": "array",
+      "description": "Pasos del checklist heredados de la mantenci\u00f3n",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "completed_at": {
+            "type": "string"
+          },
+          "completed_by": {
+            "type": "string"
+          },
+          "evidence_note": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "community_id",
+    "title",
+    "task_type",
+    "priority"
+  ]
+}
