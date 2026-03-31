@@ -131,15 +131,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-
-      {/* Semáforos */}
-      <div>
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Estado operacional</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <TaskSemaphore tasks={tasks} />
-          <MaintenanceSemaphore maintenances={maintenances} />
-        </div>
-      </div>
     </div>
   );
 }
