@@ -103,70 +103,70 @@ export default function Communities() {
 
         {/* Search + Filters */}
         <div className="space-y-3">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative max-w-sm w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por nombre..."
-                className="pl-9 bg-card"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
+          {/* Filtros row */}
+          <div className="flex flex-wrap gap-2 items-center">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              <span className="font-medium">Filtros</span>
             </div>
 
-            <div className="flex flex-wrap gap-2 items-center">
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <SlidersHorizontal className="h-3.5 w-3.5" />
-                <span className="font-medium">Filtros</span>
-              </div>
+            <Select value={filterRegion} onValueChange={v => { setFilterRegion(v === '__all__' ? '' : v); setFilterComuna(''); }}>
+              <SelectTrigger className={cn("h-8 text-xs w-44 bg-card", filterRegion && "border-primary/50 text-primary")}>
+                <SelectValue placeholder="Región" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">Todas las regiones</SelectItem>
+                {regions.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+              </SelectContent>
+            </Select>
 
-              <Select value={filterRegion} onValueChange={v => { setFilterRegion(v === '__all__' ? '' : v); setFilterComuna(''); }}>
-                <SelectTrigger className={cn("h-8 text-xs w-44 bg-card", filterRegion && "border-primary/50 text-primary")}>
-                  <SelectValue placeholder="Región" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__all__">Todas las regiones</SelectItem>
-                  {regions.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-                </SelectContent>
-              </Select>
+            <Select value={filterComuna} onValueChange={v => setFilterComuna(v === '__all__' ? '' : v)}>
+              <SelectTrigger className={cn("h-8 text-xs w-40 bg-card", filterComuna && "border-primary/50 text-primary")}>
+                <SelectValue placeholder="Comuna" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">Todas las comunas</SelectItem>
+                {comunas.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
 
-              <Select value={filterComuna} onValueChange={v => setFilterComuna(v === '__all__' ? '' : v)}>
-                <SelectTrigger className={cn("h-8 text-xs w-40 bg-card", filterComuna && "border-primary/50 text-primary")}>
-                  <SelectValue placeholder="Comuna" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__all__">Todas las comunas</SelectItem>
-                  {comunas.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
+            <Select value={filterType} onValueChange={v => setFilterType(v === '__all__' ? '' : v)}>
+              <SelectTrigger className={cn("h-8 text-xs w-36 bg-card", filterType && "border-primary/50 text-primary")}>
+                <SelectValue placeholder="Tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">Todos los tipos</SelectItem>
+                <SelectItem value="edificio">Edificio</SelectItem>
+                <SelectItem value="condominio">Condominio</SelectItem>
+              </SelectContent>
+            </Select>
 
-              <Select value={filterType} onValueChange={v => setFilterType(v === '__all__' ? '' : v)}>
-                <SelectTrigger className={cn("h-8 text-xs w-36 bg-card", filterType && "border-primary/50 text-primary")}>
-                  <SelectValue placeholder="Tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__all__">Todos los tipos</SelectItem>
-                  <SelectItem value="edificio">Edificio</SelectItem>
-                  <SelectItem value="condominio">Condominio</SelectItem>
-                </SelectContent>
-              </Select>
+            <Select value={filterUnits} onValueChange={v => setFilterUnits(v === '__all__' ? '' : v)}>
+              <SelectTrigger className={cn("h-8 text-xs w-44 bg-card", filterUnits && "border-primary/50 text-primary")}>
+                <SelectValue placeholder="N° Unidades" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">Todas las unidades</SelectItem>
+                {UNITS_RANGES.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
 
-              <Select value={filterUnits} onValueChange={v => setFilterUnits(v === '__all__' ? '' : v)}>
-                <SelectTrigger className={cn("h-8 text-xs w-44 bg-card", filterUnits && "border-primary/50 text-primary")}>
-                  <SelectValue placeholder="N° Unidades" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__all__">Todas las unidades</SelectItem>
-                  {UNITS_RANGES.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
+            {activeFilters > 0 && (
+              <Button variant="ghost" size="sm" className="h-8 text-xs gap-1 text-muted-foreground hover:text-destructive" onClick={clearFilters}>
+                <X className="h-3.5 w-3.5" /> Limpiar ({activeFilters})
+              </Button>
+            )}
+          </div>
 
-              {activeFilters > 0 && (
-                <Button variant="ghost" size="sm" className="h-8 text-xs gap-1 text-muted-foreground hover:text-destructive" onClick={clearFilters}>
-                  <X className="h-3.5 w-3.5" /> Limpiar ({activeFilters})
-                </Button>
-              )}
-            </div>
+          {/* Search below */}
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nombre..."
+              className="pl-9 bg-card"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
           </div>
 
           {filtered.length !== communities.length && (
