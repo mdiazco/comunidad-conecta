@@ -1,19 +1,24 @@
 import React, { useState } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Building2, MapPin, Users, ClipboardList, FileText, ArrowLeft, Mail } from 'lucide-react';
+import { Building2, MapPin, Users, ClipboardList, FileText, ArrowLeft, Mail, Plus, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import RecentTasksList from '@/components/dashboard/RecentTasksList';
 import TaskSemaphore from '@/components/dashboard/TaskSemaphore';
+import TaskFormDialog from '@/components/tasks/TaskFormDialog';
+import MaintenanceFormDialog from '@/components/maintenance/MaintenanceFormDialog';
 
 export default function CommunityDetail() {
   const { user } = useOutletContext();
   const communityId = new URLSearchParams(window.location.search).get('id') ||
     window.location.pathname.split('/communities/')[1];
+  const [showTaskForm, setShowTaskForm] = useState(false);
+  const [showMaintenanceForm, setShowMaintenanceForm] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: community, isLoading } = useQuery({
     queryKey: ['community', communityId],
@@ -39,6 +44,12 @@ export default function CommunityDetail() {
   const { data: procedures = [] } = useQuery({
     queryKey: ['community-procedures', communityId],
     queryFn: () => base44.entities.Procedure.filter({ community_id: communityId }),
+    enabled: !!communityId,
+  });
+
+  const { data: maintenances = [] } = useQuery({
+    queryKey: ['community-maintenances', communityId],
+    queryFn: () => base44.entities.Maintenance.filter({ community_id: communityId }, '-created_date'),
     enabled: !!communityId,
   });
 
@@ -93,14 +104,49 @@ export default function CommunityDetail() {
       <Tabs defaultValue="tasks">
         <TabsList>
           <TabsTrigger value="tasks">Tareas</TabsTrigger>
+          <TabsTrigger value="maintenances">Mantenciones</TabsTrigger>
           <TabsTrigger value="members">Miembros</TabsTrigger>
           <TabsTrigger value="procedures">Procedimientos</TabsTrigger>
           <TabsTrigger value="info">Info</TabsTrigger>
         </TabsList>
 
         <TabsContent value="tasks" className="mt-4 space-y-4">
+          <div className="flex justify-end">
+            <Button onClick={() => setShowTaskForm(true)} size="sm">
+              <Plus className="h-4 w-4 mr-1" /> Nueva Tarea
+            </Button>
+          </div>
           <TaskSemaphore tasks={tasks} />
           <RecentTasksList tasks={tasks} title="Tareas de la Comunidad" />
+        </TabsContent>
+
+        <TabsContent value="maintenances" className="mt-4 space-y-4">
+          <div className="flex justify-end">
+            <Button onClick={() => setShowMaintenanceForm(true)} size="sm">
+              <Plus className="h-4 w-4 mr-1" /> Nueva Mantención
+            </Button>
+          </div>
+          <Card>
+            <CardContent className="p-4">
+              {maintenances.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-6">No hay mantenciones registradas</p>
+              ) : (
+                <div className="space-y-3">
+                  {maintenances.map(m => (
+                    <div key={m.id} className="flex items-center justify-between p-3 rounded-lg border">
+                      <div>
+                        <p className="text-sm font-medium">{m.name}</p>
+                        <p className="text-xs text-muted-foreground capitalize">{m.system_type} · {m.frequency}</p>
+                      </div>
+                      <Badge variant={m.active ? 'default' : 'secondary'}>
+                        {m.active ? 'Activa' : 'Inactiva'}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="members" className="mt-4">
@@ -162,6 +208,18 @@ export default function CommunityDetail() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <TaskFormDialog
+        open={showTaskForm}
+        onOpenChange={setShowTaskForm}
+        communityId={communityId}
+      />
+
+      <MaintenanceFormDialog
+        open={showMaintenanceForm}
+        onOpenChange={setShowMaintenanceForm}
+        communityId={communityId}
+      />
     </div>
   );
 }
