@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Building2, Users, ClipboardList, 
-  FileText, Bell, Settings, LogOut, ChevronLeft, ChevronRight, X, Store, Wrench, Star, FileSignature, HeartPulse, Shield
+  Bell, LogOut, ChevronLeft, ChevronRight, X, Store, Wrench, Star, HeartPulse, Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
@@ -13,10 +13,8 @@ const NAV_ITEMS = [
   { path: '/communities',     icon: Building2,        label: 'Comunidades',       module: 'comunidad',      superadminOnly: true },
   { path: '/tasks',           icon: ClipboardList,    label: 'Tareas',            module: 'tareas' },
   { path: '/maintenances',    icon: Wrench,           label: 'Mantenciones',      module: 'mantenciones' },
-  { path: '/procedures',      icon: FileText,         label: 'Procedimientos',    module: 'procedimientos' },
   { path: '/providers',       icon: Star,             label: 'Scoring Proveedores', module: 'proveedores' },
   { path: '/suppliers',       icon: Store,            label: 'Proveedores',       module: 'proveedores' },
-  { path: '/contracts',       icon: FileSignature,    label: 'Contratos',         module: 'contratos' },
   { path: '/building-health', icon: HeartPulse,       label: 'Salud del Edificio', module: 'salud' },
   { path: '/users',           icon: Users,            label: 'Usuarios',          module: 'usuarios' },
   { path: '/notifications',   icon: Bell,             label: 'Notificaciones',    module: 'notificaciones' },

@@ -14,7 +14,6 @@ import Communities from '@/pages/Communities';
 import CommunityDetail from '@/pages/CommunityDetail';
 import Tasks from '@/pages/Tasks';
 import TaskDetail from '@/pages/TaskDetail';
-import Procedures from '@/pages/Procedures';
 import UsersManagement from '@/pages/UsersManagement';
 import Notifications from '@/pages/Notifications';
 import Settings from '@/pages/Settings';
@@ -22,7 +21,6 @@ import Suppliers from '@/pages/Suppliers';
 import Maintenances from '@/pages/Maintenances';
 import MaintenanceDetail from '@/pages/MaintenanceDetail';
 import Providers from '@/pages/Providers';
-import Contracts from '@/pages/Contracts';
 import BuildingHealth from '@/pages/BuildingHealth';
 import RolesManagement from '@/pages/RolesManagement';
 
@@ -58,7 +56,6 @@ const AuthenticatedApp = () => {
         <Route path="/communities/:id" element={<CommunityDetail />} />
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/tasks/:id" element={<TaskDetail />} />
-        <Route path="/procedures" element={<Procedures />} />
         <Route path="/users" element={<UsersManagement />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/settings" element={<Settings />} />
@@ -66,7 +63,6 @@ const AuthenticatedApp = () => {
         <Route path="/maintenances" element={<Maintenances />} />
         <Route path="/maintenances/:id" element={<MaintenanceDetail />} />
         <Route path="/providers" element={<Providers />} />
-        <Route path="/contracts" element={<Contracts />} />
         <Route path="/building-health" element={<BuildingHealth />} />
         <Route path="/roles" element={<RolesManagement />} />
       </Route>
