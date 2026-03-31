@@ -74,9 +74,7 @@ export default function Landing() {
       {/* HEADER */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center">
-            <span className="text-slate-800 font-bold text-lg tracking-tight">Comunidad Conecta</span>
-          </div>
+          <div className="flex items-center"></div>
 
         </div>
       </header>
