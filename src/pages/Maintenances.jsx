@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import {
   Plus, Search, Wrench, CalendarClock, CheckCircle2,
-  AlertTriangle, Clock, Pencil, Trash2, ToggleLeft, ToggleRight, ChevronRight
+  AlertTriangle, Clock, Pencil, Trash2, ToggleLeft, ToggleRight, ChevronRight, Eye
 } from 'lucide-react';
 import { SYSTEM_LABELS, SYSTEM_ICONS, getCurrentYear } from '@/lib/expertChecklists';
 import { Button } from '@/components/ui/button';
@@ -289,6 +289,9 @@ export default function Maintenances() {
                         : <ToggleLeft className="h-4 w-4 text-muted-foreground" />
                       }
                     </button>
+                    <Link to={`/maintenances/${m.id}`} className="p-1.5 rounded hover:bg-muted transition-colors" title="Ver detalle">
+                      <Eye className="h-3.5 w-3.5 text-blue-500" />
+                    </Link>
                     <button onClick={() => handleEdit(m)} className="p-1.5 rounded hover:bg-muted transition-colors">
                       <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                     </button>
