@@ -217,15 +217,15 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
           {/* Fechas */}
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
-              <Label>Inicio <span className="text-red-500">*</span></Label>
+              <Label>Fecha Inicio <span className="text-red-500">*</span></Label>
               <Input type="date" value={form.start_date} onChange={e => set('start_date', e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label>Fin (vigencia)</Label>
+              <Label>Vigencia Año en Curso</Label>
               <Input type="date" value={form.end_date} onChange={e => set('end_date', e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label>Próx. ejecución</Label>
+              <Label>Fecha de Término</Label>
               <Input type="date" value={form.next_execution} onChange={e => set('next_execution', e.target.value)} className="bg-muted/40" />
             </div>
           </div>
