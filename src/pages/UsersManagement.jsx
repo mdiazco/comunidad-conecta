@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Search, Users, Trash2, Shield } from 'lucide-react';
+import { Plus, Search, Users, Trash2, Shield, FlaskConical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -112,6 +112,24 @@ export default function UsersManagement() {
     },
   });
 
+  // Simulación de rol propio (solo superadmin)
+  const myUser = allUsers.find(u => u.email === user?.email);
+  const myCurrentRbacRole = roles.find(r => r.id === myUser?.rbac_role_id);
+
+  const simulateRoleMutation = useMutation({
+    mutationFn: async (rbacRoleName) => {
+      const rbacRole = roles.find(r => r.name === rbacRoleName);
+      if (!rbacRole) throw new Error('Rol no encontrado');
+      await base44.entities.User.update(myUser.id, { rbac_role_id: rbacRole.id });
+    },
+    onSuccess: (_, rbacRoleName) => {
+      queryClient.invalidateQueries({ queryKey: ['all-users'] });
+      toast.success(`Rol cambiado a: ${rbacRoleName}. Recarga la página para que tome efecto.`);
+      setTimeout(() => window.location.reload(), 1500);
+    },
+    onError: () => toast.error('Error al cambiar rol'),
+  });
+
   const communityMap = {};
   communities.forEach(c => { communityMap[c.id] = c.name; });
 
@@ -138,6 +156,37 @@ export default function UsersManagement() {
           <Plus className="h-4 w-4 mr-2" /> Agregar Miembro
         </Button>
       </div>
+
+      {/* Panel de simulación de rol - solo superadmin */}
+      {isAdmin && myUser && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2 text-amber-800">
+              <FlaskConical className="h-4 w-4" />
+              Simulación de Rol — Mi usuario ({user?.full_name || user?.email})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-amber-700 mb-3">
+              Cambia tu propio rol RBAC para simular distintos perfiles. Rol actual: <strong>{myCurrentRbacRole?.name || 'Sin rol asignado'}</strong>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(COMMUNITY_ROLE_TO_RBAC).map(([key, rbacName]) => (
+                <Button
+                  key={key}
+                  size="sm"
+                  variant={myCurrentRbacRole?.name === rbacName ? 'default' : 'outline'}
+                  className="text-xs h-8"
+                  disabled={simulateRoleMutation.isPending}
+                  onClick={() => simulateRoleMutation.mutate(rbacName)}
+                >
+                  {rbacName}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
