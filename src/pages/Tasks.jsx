@@ -320,123 +320,113 @@ export default function Tasks() {
             )}
           </div>
         ) : (
-          <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
-            {/* Table header */}
-            <div className="hidden md:grid grid-cols-[10px_1fr_140px_100px_130px_170px_120px_100px] items-center gap-4 px-5 py-3 bg-muted/40 border-b border-border">
-              <span />
+          <div className="rounded-2xl overflow-hidden border border-border shadow-sm bg-card">
+            {/* Table header — desktop only */}
+            <div className="hidden lg:grid grid-cols-[1fr_160px_88px_160px_56px_120px_88px] items-center gap-6 px-6 py-3 bg-muted/40 border-b border-border">
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Tarea</span>
-              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider text-center">Estado</span>
-              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider text-center">Prioridad</span>
-              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider text-center">Avance</span>
+              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Estado</span>
+              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Prioridad</span>
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Responsable</span>
+              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider text-center">Avance</span>
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider text-center">Fecha</span>
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider text-center">Acciones</span>
             </div>
 
-            <div className="divide-y divide-border">
+            <div className="divide-y divide-border/60">
               {filtered.map(task => {
                 const status   = STATUS_MAP[task.status]     || STATUS_MAP.creada;
                 const priority = PRIORITY_MAP[task.priority] || PRIORITY_MAP.media;
                 const overdue  = isOverdueFn(task);
                 const upcoming = isUpcomingFn(task);
+                const pct      = task.status === 'finalizada' ? 100 : (task.progress ?? 0);
 
                 return (
                   <div
                     key={task.id}
                     className={cn(
-                      "flex flex-col md:grid md:grid-cols-[10px_1fr_140px_100px_130px_170px_120px_100px] items-center gap-3 md:gap-4 px-5 py-4 hover:bg-accent/50 transition-colors group cursor-pointer",
-                      overdue && "border-l-[3px] border-l-red-400"
+                      "group grid grid-cols-1 lg:grid-cols-[1fr_160px_88px_160px_56px_120px_88px] items-center gap-4 lg:gap-6 px-6 py-4 hover:bg-accent/40 transition-colors cursor-pointer",
+                      overdue && "border-l-2 border-l-red-400"
                     )}
                     onClick={() => navigate(`/tasks/${task.id}`)}
                   >
-                    {/* Status dot */}
-                    <span className={cn("h-2.5 w-2.5 rounded-full shrink-0 hidden md:block", status.dot)} />
-
                     {/* Title + meta */}
-                    <div className="min-w-0 w-full md:w-auto">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className={cn("h-2 w-2 rounded-full shrink-0 md:hidden", status.dot)} />
-                        <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-                          {task.title}
-                        </p>
-                        {overdue && (
-                          <span className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-md shrink-0">
-                            VENCIDA
-                          </span>
-                        )}
-                        {upcoming && !overdue && (
-                          <span className="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-md shrink-0">
-                            PRÓXIMA
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs text-muted-foreground">{TYPE_MAP[task.task_type]}</span>
-                        {task.community_name && (
-                          <span className="text-xs text-muted-foreground/50 truncate">· {task.community_name}</span>
-                        )}
+                    <div className="min-w-0 flex items-start gap-3">
+                      <span className={cn("mt-1.5 h-2 w-2 rounded-full shrink-0", status.dot)} />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
+                            {task.title}
+                          </p>
+                          {overdue && (
+                            <span className="text-[9px] font-black text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded uppercase tracking-wide shrink-0">Vencida</span>
+                          )}
+                          {upcoming && !overdue && (
+                            <span className="text-[9px] font-black text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded uppercase tracking-wide shrink-0">Próxima</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <span className="text-[11px] text-muted-foreground font-medium">{TYPE_MAP[task.task_type] || task.task_type}</span>
+                          {task.community_name && (
+                            <>
+                              <span className="text-muted-foreground/30 text-[11px]">·</span>
+                              <span className="text-[11px] text-muted-foreground/60 truncate max-w-[180px]">{task.community_name}</span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Status badge */}
-                    <div className="flex justify-center">
-                      <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-lg border", status.class)}>
+                    {/* Status */}
+                    <div>
+                      <span className={cn("inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-md border whitespace-nowrap", status.class)}>
                         {status.label}
                       </span>
                     </div>
 
-                    {/* Priority badge */}
-                    <div className="flex justify-center">
-                      <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-lg border inline-flex items-center gap-1.5", priority.class)}>
-                        <span className={cn("h-1.5 w-1.5 rounded-full", priority.dot)} />
+                    {/* Priority */}
+                    <div>
+                      <span className={cn("inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-md border", priority.class)}>
+                        <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", priority.dot)} />
                         {priority.label}
                       </span>
                     </div>
 
-                    {/* Progress */}
-                    <div className="w-full md:w-[130px] shrink-0 hidden md:block">
-                      {task.status === 'finalizada' ? (
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 h-1.5 bg-emerald-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-emerald-500 rounded-full w-full" />
-                          </div>
-                          <span className="text-[11px] font-bold text-emerald-600 tabular-nums">100%</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                            <div
-                              className={cn("h-full rounded-full transition-all", (task.progress ?? 0) >= 75 ? "bg-primary" : (task.progress ?? 0) >= 40 ? "bg-amber-500" : "bg-primary/50")}
-                              style={{ width: `${task.progress ?? 0}%` }}
-                            />
-                          </div>
-                          <span className="text-[11px] font-semibold text-muted-foreground tabular-nums">{task.progress ?? 0}%</span>
-                        </div>
-                      )}
-                    </div>
-
                     {/* Assignee */}
-                    <div className="flex items-center gap-2 w-full md:w-[170px] shrink-0">
+                    <div className="flex items-center gap-2.5 min-w-0">
                       {task.assigned_to_name ? (
                         <>
-                          <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 ring-2 ring-primary/10">
-                            <span className="text-[11px] font-bold text-primary">
+                          <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 ring-1 ring-primary/20">
+                            <span className="text-[11px] font-bold text-primary leading-none">
                               {task.assigned_to_name[0].toUpperCase()}
                             </span>
                           </div>
-                          <span className="text-xs text-foreground truncate font-medium">{task.assigned_to_name}</span>
+                          <span className="text-xs text-foreground font-medium truncate">{task.assigned_to_name}</span>
                         </>
                       ) : (
                         <span className="text-xs text-muted-foreground/40 italic">Sin asignar</span>
                       )}
                     </div>
 
+                    {/* Progress */}
+                    <div className="hidden lg:flex flex-col items-center gap-1">
+                      <span className={cn(
+                        "text-xs font-bold tabular-nums",
+                        pct === 100 ? "text-emerald-600" : "text-foreground"
+                      )}>{pct}%</span>
+                      <div className="w-8 h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={cn("h-full rounded-full transition-all", pct === 100 ? "bg-emerald-500" : pct >= 50 ? "bg-primary" : "bg-primary/40")}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+
                     {/* Due date */}
-                    <div className="w-[120px] text-center shrink-0 flex items-center justify-center">
+                    <div className="hidden lg:block text-center">
                       {task.due_date ? (
                         <span className={cn(
-                          "text-xs font-semibold",
-                          overdue ? "text-red-600" : upcoming ? "text-amber-600" : "text-muted-foreground"
+                          "text-xs font-medium",
+                          overdue ? "text-red-600 font-semibold" : upcoming ? "text-amber-600 font-semibold" : "text-muted-foreground"
                         )}>
                           {format(new Date(task.due_date), "d MMM yyyy", { locale: es })}
                         </span>
@@ -446,10 +436,10 @@ export default function Tasks() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center justify-center gap-1" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center justify-center gap-0.5" onClick={e => e.stopPropagation()}>
                       <button
                         onClick={() => navigate(`/tasks/${task.id}`)}
-                        className="p-1.5 rounded-lg hover:bg-blue-50 text-muted-foreground hover:text-blue-600 transition-colors"
+                        className="p-2 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
                         title="Ver detalle"
                       >
                         <Eye className="h-3.5 w-3.5" />
@@ -457,8 +447,8 @@ export default function Tasks() {
                       {canCreate && (
                         <button
                           onClick={() => { setEditingTask(task); setFormOpen(true); }}
-                          className="p-1.5 rounded-lg hover:bg-amber-50 text-muted-foreground hover:text-amber-600 transition-colors"
-                          title="Editar tarea"
+                          className="p-2 rounded-lg hover:bg-amber-50 text-muted-foreground hover:text-amber-500 transition-colors"
+                          title="Editar"
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
@@ -470,26 +460,26 @@ export default function Tasks() {
                               deleteMutation.mutate(task.id);
                             }
                           }}
-                          className="p-1.5 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-600 transition-colors"
-                          title="Eliminar tarea"
+                          className="p-2 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors"
+                          title="Eliminar"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       )}
                     </div>
-                    </div>
+                  </div>
                 );
               })}
             </div>
 
             {/* Footer */}
-            <div className="px-5 py-3 bg-muted/20 border-t border-border flex items-center justify-between">
+            <div className="px-6 py-3 bg-muted/20 border-t border-border flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
-                Mostrando <span className="font-semibold text-foreground">{filtered.length}</span> de{' '}
+                <span className="font-semibold text-foreground">{filtered.length}</span> de{' '}
                 <span className="font-semibold text-foreground">{visibleTasks.length}</span> tareas
               </p>
               {counts.overdue > 0 && (
-                <span className="text-xs text-red-600 font-semibold flex items-center gap-1">
+                <span className="text-xs text-red-600 font-semibold flex items-center gap-1.5">
                   <AlertTriangle className="h-3 w-3" /> {counts.overdue} vencida{counts.overdue > 1 ? 's' : ''}
                 </span>
               )}
