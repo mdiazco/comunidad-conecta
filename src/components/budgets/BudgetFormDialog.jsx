@@ -8,12 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
-import { DollarSign } from 'lucide-react';
+import { DollarSign, Paperclip, Loader2 } from 'lucide-react';
 
 const EMPTY = { supplier_name: '', supplier_id: '', amount: '', description: '', notes: '', file_url: '' };
 
 export default function BudgetFormDialog({ open, onOpenChange, taskId, communityId }) {
   const [form, setForm] = useState(EMPTY);
+  const [uploading, setUploading] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: suppliers = [] } = useQuery({
@@ -37,10 +38,25 @@ export default function BudgetFormDialog({ open, onOpenChange, taskId, community
     onError: () => toast.error('Error al guardar presupuesto'),
   });
 
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.type !== 'application/pdf') { toast.error('Solo se permiten archivos PDF'); return; }
+    setUploading(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    set('file_url', file_url);
+    setUploading(false);
+    toast.success('Archivo subido');
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.supplier_name.trim() || !form.amount) {
       toast.error('Proveedor y monto son obligatorios');
+      return;
+    }
+    if (!form.file_url) {
+      toast.error('El documento PDF es obligatorio');
       return;
     }
     const sup = suppliers.find(s => s.id === form.supplier_id);
@@ -107,6 +123,41 @@ export default function BudgetFormDialog({ open, onOpenChange, taskId, community
                 required
               />
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Documento PDF *</Label>
+            {form.file_url ? (
+              <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                <Paperclip className="h-4 w-4 text-emerald-600 shrink-0" />
+                <span className="text-sm text-emerald-700 flex-1 truncate">Archivo subido correctamente</span>
+                <button
+                  type="button"
+                  onClick={() => set('file_url', '')}
+                  className="text-xs text-red-500 hover:underline shrink-0"
+                >
+                  Quitar
+                </button>
+              </div>
+            ) : (
+              <label className={`flex items-center gap-3 p-3 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${uploading ? 'border-primary/40 bg-primary/5' : 'border-border hover:border-primary/40 hover:bg-muted/40'}`}>
+                {uploading ? (
+                  <Loader2 className="h-4 w-4 text-primary animate-spin shrink-0" />
+                ) : (
+                  <Paperclip className="h-4 w-4 text-muted-foreground shrink-0" />
+                )}
+                <span className="text-sm text-muted-foreground">
+                  {uploading ? 'Subiendo archivo...' : 'Haz clic para subir PDF del presupuesto'}
+                </span>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                  disabled={uploading}
+                />
+              </label>
+            )}
           </div>
 
           <div className="space-y-1.5">
