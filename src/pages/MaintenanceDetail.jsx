@@ -12,6 +12,8 @@ import { format, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import MaintenanceFormDialog from '@/components/maintenance/MaintenanceFormDialog';
 import GenerateTaskDialog from '@/components/maintenance/GenerateTaskDialog';
+import TaskDetailModal from '@/components/maintenance/TaskDetailModal';
+import { useOutletContext } from 'react-router-dom';
 
 const FREQ_LABELS = {
   mensual: 'Mensual', trimestral: 'Trimestral',
@@ -42,8 +44,10 @@ function ChecklistMiniSummary({ items = [] }) {
 
 export default function MaintenanceDetail() {
   const { id } = useParams();
+  const { user } = useOutletContext();
   const [editOpen, setEditOpen] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
 
   const { data: maintenance, isLoading } = useQuery({
     queryKey: ['maintenances', id],
@@ -239,10 +243,10 @@ export default function MaintenanceDetail() {
               const st = STATUS_STYLES[task.status] || STATUS_STYLES.creada;
               const taskChecklist = task.checklist_items || [];
               return (
-                <Link
+                <button
                   key={task.id}
-                  to={`/tasks/${task.id}`}
-                  className="flex items-center gap-3 px-5 py-3.5 hover:bg-accent/40 transition-colors group"
+                  onClick={() => setSelectedTaskId(task.id)}
+                  className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-accent/40 transition-colors group text-left"
                 >
                   <span className={cn("h-2 w-2 rounded-full shrink-0", st.dot)} />
                   <div className="flex-1 min-w-0 space-y-0.5">
@@ -261,7 +265,7 @@ export default function MaintenanceDetail() {
                   <div className="flex items-center gap-2 shrink-0">
                     <span className={cn("text-xs font-medium px-2 py-0.5 rounded-md border", st.badge)}>{st.label}</span>
                   </div>
-                </Link>
+                </button>
               );
             })}
           </div>
@@ -270,6 +274,12 @@ export default function MaintenanceDetail() {
 
       <MaintenanceFormDialog open={editOpen} onOpenChange={setEditOpen} maintenance={maintenance} />
       <GenerateTaskDialog open={generateOpen} onOpenChange={setGenerateOpen} maintenance={maintenance} />
+      <TaskDetailModal
+        taskId={selectedTaskId}
+        open={!!selectedTaskId}
+        onOpenChange={v => { if (!v) setSelectedTaskId(null); }}
+        user={user}
+      />
     </div>
   );
 }
