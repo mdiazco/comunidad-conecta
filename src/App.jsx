@@ -24,6 +24,7 @@ import Providers from '@/pages/Providers';
 import BuildingHealth from '@/pages/BuildingHealth';
 import RolesManagement from '@/pages/RolesManagement';
 import BudgetDashboard from '@/pages/BudgetDashboard';
+import BudgetApproval from '@/pages/BudgetApproval';
 import CommitteeMembers from '@/pages/CommitteeMembers';
 
 const AuthenticatedApp = () => {
@@ -68,6 +69,7 @@ const AuthenticatedApp = () => {
         <Route path="/building-health" element={<BuildingHealth />} />
         <Route path="/roles" element={<RolesManagement />} />
         <Route path="/budget-dashboard" element={<BudgetDashboard />} />
+        <Route path="/budget-approval" element={<BudgetApproval />} />
         <Route path="/committee-members" element={<CommitteeMembers />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />

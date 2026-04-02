@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Building2, Users, ClipboardList, 
-  Bell, LogOut, ChevronLeft, ChevronRight, X, Store, Wrench, Star, HeartPulse, Shield, BarChart2, UserCog
+  Bell, LogOut, ChevronLeft, ChevronRight, X, Store, Wrench, Star, HeartPulse, Shield, BarChart2, UserCog, DollarSign
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
@@ -12,7 +12,8 @@ const NAV_ITEMS = [
   { path: '/dashboard',       icon: LayoutDashboard, label: 'Dashboard',         module: 'dashboard' },
   { path: '/communities',     icon: Building2,        label: 'Comunidades',       module: 'comunidad',      superadminOnly: true },
   { path: '/tasks',           icon: ClipboardList,    label: 'Tareas',            module: 'tareas' },
-  { path: '/budget-dashboard', icon: BarChart2,       label: 'Presupuestos',       module: 'tareas' },
+  { path: '/budget-approval',  icon: DollarSign,       label: 'Aprobación Presup.', module: 'tareas' },
+  { path: '/budget-dashboard', icon: BarChart2,       label: 'Dashboard Presup.',  module: 'tareas' },
   { path: '/maintenances',    icon: Wrench,           label: 'Mantenciones',      module: 'mantenciones' },
   { path: '/providers',       icon: Star,             label: 'Scoring Proveedores', module: 'proveedores' },
   { path: '/suppliers',       icon: Store,            label: 'Proveedores',       module: 'proveedores' },
