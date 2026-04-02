@@ -73,10 +73,13 @@ export default function Tasks() {
     enabled: !!user?.email && !isAdmin,
   });
 
-  const visibleTasks = isAdmin ? tasks : tasks.filter(t => {
+  const allVisibleTasks = isAdmin ? tasks : tasks.filter(t => {
     const myCommunities = myMemberships.map(m => m.community_id);
     return myCommunities.includes(t.community_id) || t.assigned_to === user?.email;
   });
+
+  // Excluir tareas generadas desde mantenciones — éstas se gestionan en el módulo de Mantenciones
+  const visibleTasks = allVisibleTasks.filter(t => t.origin !== 'mantencion');
 
   const now = new Date();
   const isOverdueFn = t => t.due_date && new Date(t.due_date) < now && !['finalizada', 'observada'].includes(t.status);
