@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 const EMPTY = {
-  community_id: '', title: '', description: '', task_type: 'preventiva',
+  community_id: '', title: '', description: '', task_type: 'reparacion',
   priority: 'media', assigned_to: '', due_date: '', supplier_id: '', supplier_name: '',
   requires_budget: false,
 };
@@ -108,7 +108,6 @@ export default function TaskFormDialog({ open, onOpenChange, task, communityId }
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="reparacion">Reparación</SelectItem>
-                  <SelectItem value="preventiva">Preventiva</SelectItem>
                   <SelectItem value="emergencia">Emergencia</SelectItem>
                   <SelectItem value="administrativa">Administrativa</SelectItem>
                 </SelectContent>
