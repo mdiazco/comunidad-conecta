@@ -322,14 +322,14 @@ export default function Tasks() {
         ) : (
           <div className="rounded-2xl overflow-hidden border border-border shadow-sm bg-card">
             {/* Table header — desktop only */}
-            <div className="hidden lg:grid grid-cols-[1fr_160px_88px_160px_56px_120px_88px] items-center gap-6 px-6 py-3 bg-muted/40 border-b border-border">
+            <div className="hidden lg:grid grid-cols-[minmax(220px,2fr)_180px_100px_160px_80px_110px_96px] items-center gap-4 px-5 py-3 bg-muted/40 border-b border-border">
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Tarea</span>
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Estado</span>
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Prioridad</span>
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Responsable</span>
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider text-center">Avance</span>
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider text-center">Fecha</span>
-              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider text-center">Acciones</span>
+              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider text-right pr-2">Acciones</span>
             </div>
 
             <div className="divide-y divide-border/60">
@@ -344,32 +344,32 @@ export default function Tasks() {
                   <div
                     key={task.id}
                     className={cn(
-                      "group grid grid-cols-1 lg:grid-cols-[1fr_160px_88px_160px_56px_120px_88px] items-center gap-4 lg:gap-6 px-6 py-4 hover:bg-accent/40 transition-colors cursor-pointer",
-                      overdue && "border-l-2 border-l-red-400"
+                      "group grid grid-cols-1 lg:grid-cols-[minmax(220px,2fr)_180px_100px_160px_80px_110px_96px] items-center gap-3 lg:gap-4 px-5 py-4 hover:bg-accent/30 transition-colors cursor-pointer",
+                      overdue && "border-l-[3px] border-l-red-400"
                     )}
                     onClick={() => navigate(`/tasks/${task.id}`)}
                   >
                     {/* Title + meta */}
-                    <div className="min-w-0 flex items-start gap-3">
-                      <span className={cn("mt-1.5 h-2 w-2 rounded-full shrink-0", status.dot)} />
+                    <div className="min-w-0 flex items-center gap-3">
+                      <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", status.dot)} />
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
+                          <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-snug truncate">
                             {task.title}
                           </p>
                           {overdue && (
-                            <span className="text-[9px] font-black text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded uppercase tracking-wide shrink-0">Vencida</span>
+                            <span className="text-[9px] font-black text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-full uppercase tracking-wide shrink-0">Vencida</span>
                           )}
                           {upcoming && !overdue && (
-                            <span className="text-[9px] font-black text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded uppercase tracking-wide shrink-0">Próxima</span>
+                            <span className="text-[9px] font-black text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full uppercase tracking-wide shrink-0">Próxima</span>
                           )}
                         </div>
-                        <div className="flex items-center gap-1.5 mt-1">
-                          <span className="text-[11px] text-muted-foreground font-medium">{TYPE_MAP[task.task_type] || task.task_type}</span>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="text-[11px] text-muted-foreground">{TYPE_MAP[task.task_type] || task.task_type}</span>
                           {task.community_name && (
                             <>
-                              <span className="text-muted-foreground/30 text-[11px]">·</span>
-                              <span className="text-[11px] text-muted-foreground/60 truncate max-w-[180px]">{task.community_name}</span>
+                              <span className="text-muted-foreground/30">·</span>
+                              <span className="text-[11px] text-muted-foreground/60 truncate max-w-[160px]">{task.community_name}</span>
                             </>
                           )}
                         </div>
@@ -377,30 +377,31 @@ export default function Tasks() {
                     </div>
 
                     {/* Status */}
-                    <div>
-                      <span className={cn("inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-md border whitespace-nowrap", status.class)}>
+                    <div className="flex items-center">
+                      <span className={cn("inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border whitespace-nowrap", status.class)}>
+                        <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", status.dot)} />
                         {status.label}
                       </span>
                     </div>
 
                     {/* Priority */}
-                    <div>
-                      <span className={cn("inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-md border", priority.class)}>
+                    <div className="flex items-center">
+                      <span className={cn("inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border", priority.class)}>
                         <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", priority.dot)} />
                         {priority.label}
                       </span>
                     </div>
 
                     {/* Assignee */}
-                    <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
                       {task.assigned_to_name ? (
                         <>
-                          <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 ring-1 ring-primary/20">
-                            <span className="text-[11px] font-bold text-primary leading-none">
+                          <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 ring-1 ring-primary/20">
+                            <span className="text-[10px] font-bold text-primary leading-none">
                               {task.assigned_to_name[0].toUpperCase()}
                             </span>
                           </div>
-                          <span className="text-xs text-foreground font-medium truncate">{task.assigned_to_name}</span>
+                          <span className="text-xs text-foreground truncate">{task.assigned_to_name}</span>
                         </>
                       ) : (
                         <span className="text-xs text-muted-foreground/40 italic">Sin asignar</span>
@@ -413,7 +414,7 @@ export default function Tasks() {
                         "text-xs font-bold tabular-nums",
                         pct === 100 ? "text-emerald-600" : "text-foreground"
                       )}>{pct}%</span>
-                      <div className="w-8 h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div className="w-10 h-1.5 bg-muted rounded-full overflow-hidden">
                         <div
                           className={cn("h-full rounded-full transition-all", pct === 100 ? "bg-emerald-500" : pct >= 50 ? "bg-primary" : "bg-primary/40")}
                           style={{ width: `${pct}%` }}
@@ -436,10 +437,10 @@ export default function Tasks() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center justify-center gap-0.5" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center justify-end gap-0.5" onClick={e => e.stopPropagation()}>
                       <button
                         onClick={() => navigate(`/tasks/${task.id}`)}
-                        className="p-2 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
                         title="Ver detalle"
                       >
                         <Eye className="h-3.5 w-3.5" />
@@ -447,7 +448,7 @@ export default function Tasks() {
                       {canCreate && (
                         <button
                           onClick={() => { setEditingTask(task); setFormOpen(true); }}
-                          className="p-2 rounded-lg hover:bg-amber-50 text-muted-foreground hover:text-amber-500 transition-colors"
+                          className="p-1.5 rounded-lg hover:bg-amber-50 text-muted-foreground hover:text-amber-500 transition-colors"
                           title="Editar"
                         >
                           <Pencil className="h-3.5 w-3.5" />
@@ -460,7 +461,7 @@ export default function Tasks() {
                               deleteMutation.mutate(task.id);
                             }
                           }}
-                          className="p-2 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors"
+                          className="p-1.5 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors"
                           title="Eliminar"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
