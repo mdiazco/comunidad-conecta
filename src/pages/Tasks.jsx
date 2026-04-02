@@ -17,11 +17,16 @@ import { cn } from '@/lib/utils';
 import PermissionGate from '@/components/rbac/PermissionGate';
 
 const STATUS_MAP = {
-  creada:       { label: 'Creada',       class: 'bg-slate-100 text-slate-600 border-slate-200',      dot: 'bg-slate-400' },
-  asignada:     { label: 'Asignada',     class: 'bg-blue-50 text-blue-700 border-blue-200',           dot: 'bg-blue-500' },
-  en_ejecucion: { label: 'En ejecución', class: 'bg-amber-50 text-amber-700 border-amber-200',        dot: 'bg-amber-500' },
-  finalizada:   { label: 'Finalizada',   class: 'bg-emerald-50 text-emerald-700 border-emerald-200',  dot: 'bg-emerald-500' },
-  observada:    { label: 'Observada',    class: 'bg-red-50 text-red-700 border-red-200',              dot: 'bg-red-500' },
+  creada:                 { label: 'Creada',             class: 'bg-slate-100 text-slate-600 border-slate-200',      dot: 'bg-slate-400' },
+  pendiente_presupuestos: { label: 'Pend. presupuestos', class: 'bg-purple-50 text-purple-700 border-purple-200',    dot: 'bg-purple-500' },
+  en_evaluacion:          { label: 'En evaluación',      class: 'bg-blue-50 text-blue-700 border-blue-200',          dot: 'bg-blue-500' },
+  pendiente_aprobacion:   { label: 'Pend. aprobación',   class: 'bg-amber-50 text-amber-700 border-amber-200',       dot: 'bg-amber-500' },
+  aprobada:               { label: 'Aprobada',           class: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
+  rechazada:              { label: 'Rechazada',          class: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-500' },
+  asignada:               { label: 'Asignada',           class: 'bg-blue-50 text-blue-700 border-blue-200',          dot: 'bg-blue-500' },
+  en_ejecucion:           { label: 'En ejecución',       class: 'bg-amber-50 text-amber-700 border-amber-200',       dot: 'bg-amber-500' },
+  finalizada:             { label: 'Finalizada',         class: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
+  observada:              { label: 'Observada',          class: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-500' },
 };
 
 const PRIORITY_MAP = {
@@ -31,6 +36,7 @@ const PRIORITY_MAP = {
 };
 
 const TYPE_MAP = {
+  reparacion:     'Reparación',
   preventiva:     'Preventiva',
   emergencia:     'Emergencia',
   administrativa: 'Administrativa',
@@ -232,6 +238,11 @@ export default function Tasks() {
             <SelectContent>
               <SelectItem value="all">Todos los estados</SelectItem>
               <SelectItem value="creada">Creada</SelectItem>
+              <SelectItem value="pendiente_presupuestos">Pend. presupuestos</SelectItem>
+              <SelectItem value="en_evaluacion">En evaluación</SelectItem>
+              <SelectItem value="pendiente_aprobacion">Pend. aprobación</SelectItem>
+              <SelectItem value="aprobada">Aprobada</SelectItem>
+              <SelectItem value="rechazada">Rechazada</SelectItem>
               <SelectItem value="asignada">Asignada</SelectItem>
               <SelectItem value="en_ejecucion">En ejecución</SelectItem>
               <SelectItem value="finalizada">Finalizada</SelectItem>

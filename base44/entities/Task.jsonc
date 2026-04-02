@@ -17,6 +17,7 @@
     "task_type": {
       "type": "string",
       "enum": [
+        "reparacion",
         "preventiva",
         "emergencia",
         "administrativa"
@@ -36,6 +37,11 @@
       "type": "string",
       "enum": [
         "creada",
+        "pendiente_presupuestos",
+        "en_evaluacion",
+        "pendiente_aprobacion",
+        "aprobada",
+        "rechazada",
         "asignada",
         "en_ejecucion",
         "finalizada",
@@ -142,6 +148,39 @@
           }
         }
       }
+    },
+    "requires_budget": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si la tarea requiere presupuestos comparativos (para reparaciones)"
+    },
+    "selected_budget_id": {
+      "type": "string",
+      "description": "ID del presupuesto seleccionado/aprobado"
+    },
+    "selected_budget_supplier": {
+      "type": "string",
+      "description": "Nombre del proveedor del presupuesto aprobado (cache)"
+    },
+    "selected_budget_amount": {
+      "type": "number",
+      "description": "Monto del presupuesto aprobado (cache)"
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "Email del usuario que aprob\u00f3 el presupuesto"
+    },
+    "approved_by_name": {
+      "type": "string",
+      "description": "Nombre del usuario que aprob\u00f3"
+    },
+    "approved_at": {
+      "type": "string",
+      "description": "Fecha y hora de aprobaci\u00f3n"
+    },
+    "rejection_reason": {
+      "type": "string",
+      "description": "Motivo de rechazo (si aplica)"
     }
   },
   "required": [

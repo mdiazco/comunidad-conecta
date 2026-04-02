@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, Play, CheckCircle, AlertTriangle, Clock, User, Building2, Calendar, Tag, CheckCircle2, Minus, Plus, Star, Pencil, Wrench } from 'lucide-react';
+import { ArrowLeft, Play, CheckCircle, AlertTriangle, Clock, User, Building2, Calendar, Tag, CheckCircle2, Star, Pencil, Wrench, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,14 +15,20 @@ import ChecklistPanel from '@/components/tasks/ChecklistPanel';
 import ScoreDialog from '@/components/providers/ScoreDialog';
 import { isSuperAdmin, canObserveTask, canStartFinishTask } from '@/lib/permissions';
 import TaskFormDialog from '@/components/tasks/TaskFormDialog';
+import BudgetPanel from '@/components/budgets/BudgetPanel';
 import { cn } from '@/lib/utils';
 
 const STATUS_MAP = {
-  creada:       { label: 'Creada',       class: 'bg-slate-100 text-slate-600 border-slate-200',      dot: 'bg-slate-400',   step: 0 },
-  asignada:     { label: 'Asignada',     class: 'bg-blue-50 text-blue-700 border-blue-200',           dot: 'bg-blue-500',    step: 1 },
-  en_ejecucion: { label: 'En ejecución', class: 'bg-amber-50 text-amber-700 border-amber-200',        dot: 'bg-amber-500',   step: 2 },
-  finalizada:   { label: 'Finalizada',   class: 'bg-emerald-50 text-emerald-700 border-emerald-200',  dot: 'bg-emerald-500', step: 3 },
-  observada:    { label: 'Observada',    class: 'bg-red-50 text-red-700 border-red-200',              dot: 'bg-red-500',     step: -1 },
+  creada:                  { label: 'Creada',                  class: 'bg-slate-100 text-slate-600 border-slate-200',      dot: 'bg-slate-400',   step: 0 },
+  pendiente_presupuestos:  { label: 'Pend. presupuestos',      class: 'bg-purple-50 text-purple-700 border-purple-200',    dot: 'bg-purple-500',  step: 0 },
+  en_evaluacion:           { label: 'En evaluación',           class: 'bg-blue-50 text-blue-700 border-blue-200',          dot: 'bg-blue-500',    step: 1 },
+  pendiente_aprobacion:    { label: 'Pend. aprobación',        class: 'bg-amber-50 text-amber-700 border-amber-200',       dot: 'bg-amber-500',   step: 1 },
+  aprobada:                { label: 'Aprobada',                class: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500', step: 2 },
+  rechazada:               { label: 'Rechazada',               class: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-500',     step: -1 },
+  asignada:                { label: 'Asignada',                class: 'bg-blue-50 text-blue-700 border-blue-200',          dot: 'bg-blue-500',    step: 1 },
+  en_ejecucion:            { label: 'En ejecución',            class: 'bg-amber-50 text-amber-700 border-amber-200',       dot: 'bg-amber-500',   step: 2 },
+  finalizada:              { label: 'Finalizada',              class: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500', step: 3 },
+  observada:               { label: 'Observada',               class: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-500',     step: -1 },
 };
 
 const PRIORITY_MAP = {
@@ -349,6 +355,11 @@ export default function TaskDetail() {
 
       <ScoreDialog open={scoreOpen} onOpenChange={setScoreOpen} task={task} user={user} />
       <TaskFormDialog open={editOpen} onOpenChange={setEditOpen} task={task} />
+
+      {/* ── Budget Panel (for reparacion tasks) ── */}
+      {task.task_type === 'reparacion' && task.requires_budget && (
+        <BudgetPanel task={task} canApprove={isAdmin || canObserve} user={user} />
+      )}
 
       {/* ── Checklist (if task from maintenance) ── */}
       {(task.checklist_items?.length > 0) && (

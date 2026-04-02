@@ -8,10 +8,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 const EMPTY = {
   community_id: '', title: '', description: '', task_type: 'preventiva',
-  priority: 'media', assigned_to: '', due_date: '', supplier_id: '', supplier_name: ''
+  priority: 'media', assigned_to: '', due_date: '', supplier_id: '', supplier_name: '',
+  requires_budget: false,
 };
 
 export default function TaskFormDialog({ open, onOpenChange, task, communityId }) {
@@ -47,12 +49,15 @@ export default function TaskFormDialog({ open, onOpenChange, task, communityId }
       const community = communities.find(c => c.id === data.community_id);
       const member = members.find(m => m.user_email === data.assigned_to);
       const supplier = suppliers.find(s => s.id === data.supplier_id);
+      const isRepair = data.task_type === 'reparacion';
       const payload = {
         ...data,
         community_name: community?.name || '',
         assigned_to_name: member?.user_name || data.assigned_to,
         supplier_name: supplier?.name || '',
-        status: data.assigned_to ? 'asignada' : 'creada',
+        status: isRepair && data.requires_budget
+          ? 'pendiente_presupuestos'
+          : data.assigned_to ? 'asignada' : 'creada',
       };
       if (task) return base44.entities.Task.update(task.id, payload);
       return base44.entities.Task.create(payload);
@@ -102,6 +107,7 @@ export default function TaskFormDialog({ open, onOpenChange, task, communityId }
               <Select value={form.task_type} onValueChange={v => set('task_type', v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="reparacion">Reparación</SelectItem>
                   <SelectItem value="preventiva">Preventiva</SelectItem>
                   <SelectItem value="emergencia">Emergencia</SelectItem>
                   <SelectItem value="administrativa">Administrativa</SelectItem>
@@ -140,6 +146,25 @@ export default function TaskFormDialog({ open, onOpenChange, task, communityId }
               <Input type="date" value={form.due_date} onChange={e => set('due_date', e.target.value)} />
             </div>
           </div>
+          {/* Requires budget toggle — only for reparacion */}
+          {form.task_type === 'reparacion' && (
+            <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <div>
+                <p className="text-sm font-medium text-emerald-800">Requiere comparación de presupuestos</p>
+                <p className="text-xs text-emerald-600">Mínimo 3 presupuestos antes de aprobar</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => set('requires_budget', !form.requires_budget)}
+                className={cn(
+                  'relative inline-flex h-5 w-9 items-center rounded-full transition-colors',
+                  form.requires_budget ? 'bg-emerald-600' : 'bg-slate-200'
+                )}
+              >
+                <span className={cn('inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform', form.requires_budget ? 'translate-x-4' : 'translate-x-0.5')} />
+              </button>
+            </div>
+          )}
           <div>
             <Label>Proveedor / Contratista</Label>
             <Select value={form.supplier_id || ''} onValueChange={v => set('supplier_id', v)}>

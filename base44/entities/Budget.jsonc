@@ -1,0 +1,66 @@
+{
+  "name": "Budget",
+  "type": "object",
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "description": "ID de la tarea asociada"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "ID de la comunidad"
+    },
+    "supplier_id": {
+      "type": "string",
+      "description": "ID del proveedor (entidad Supplier)"
+    },
+    "supplier_name": {
+      "type": "string",
+      "description": "Nombre del proveedor"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Monto del presupuesto (CLP)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n del presupuesto"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL del documento de presupuesto"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas adicionales"
+    },
+    "is_selected": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si este presupuesto fue seleccionado"
+    },
+    "is_approved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si fue aprobado formalmente"
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "Email del usuario que aprob\u00f3"
+    },
+    "approved_by_name": {
+      "type": "string",
+      "description": "Nombre del usuario que aprob\u00f3"
+    },
+    "approved_at": {
+      "type": "string",
+      "description": "Fecha y hora de aprobaci\u00f3n (ISO)"
+    }
+  },
+  "required": [
+    "task_id",
+    "community_id",
+    "supplier_name",
+    "amount"
+  ]
+}
