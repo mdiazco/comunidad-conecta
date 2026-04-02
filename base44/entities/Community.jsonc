@@ -1,0 +1,87 @@
+{
+  "name": "Community",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre de la comunidad"
+    },
+    "address": {
+      "type": "string",
+      "description": "Direcci\u00f3n"
+    },
+    "region": {
+      "type": "string",
+      "description": "Regi\u00f3n"
+    },
+    "comuna": {
+      "type": "string",
+      "description": "Comuna"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "edificio",
+        "condominio"
+      ],
+      "description": "Tipo de comunidad"
+    },
+    "units": {
+      "type": "number",
+      "description": "N\u00famero de unidades"
+    },
+    "rut": {
+      "type": "string",
+      "description": "RUT de la comunidad"
+    },
+    "contact_email": {
+      "type": "string",
+      "description": "Email de contacto del comit\u00e9"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n"
+    },
+    "year_built": {
+      "type": "number",
+      "description": "A\u00f1o de construcci\u00f3n"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active"
+    },
+    "approval_mode": {
+      "type": "string",
+      "enum": [
+        "majority",
+        "unanimity"
+      ],
+      "default": "majority",
+      "description": "Modo de aprobaci\u00f3n del comit\u00e9: mayor\u00eda simple o unanimidad"
+    },
+    "min_committee_votes": {
+      "type": "number",
+      "default": 1,
+      "description": "M\u00ednimo de votos del comit\u00e9 requeridos para que el resultado sea v\u00e1lido"
+    },
+    "admin_can_veto": {
+      "type": "boolean",
+      "default": true,
+      "description": "Si el administrador puede vetar la decisi\u00f3n del comit\u00e9"
+    }
+  },
+  "required": [
+    "name",
+    "address",
+    "region",
+    "comuna",
+    "type",
+    "units",
+    "rut",
+    "contact_email"
+  ]
+}

@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, Play, CheckCircle, AlertTriangle, Clock, User, Building2, Calendar, Tag, CheckCircle2, Star, Pencil, Wrench, DollarSign } from 'lucide-react';
+import {
+  ArrowLeft, Play, CheckCircle, AlertTriangle, Clock, User,
+  Building2, Calendar, Tag, CheckCircle2, Star, Pencil, Wrench, DollarSign, Users
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,19 +19,23 @@ import ScoreDialog from '@/components/providers/ScoreDialog';
 import { isSuperAdmin, canObserveTask, canStartFinishTask } from '@/lib/permissions';
 import TaskFormDialog from '@/components/tasks/TaskFormDialog';
 import BudgetPanel from '@/components/budgets/BudgetPanel';
+import CommitteeVotingPanel from '@/components/budgets/CommitteeVotingPanel';
 import { cn } from '@/lib/utils';
 
 const STATUS_MAP = {
-  creada:                  { label: 'Creada',                  class: 'bg-slate-100 text-slate-600 border-slate-200',      dot: 'bg-slate-400',   step: 0 },
-  pendiente_presupuestos:  { label: 'Pend. presupuestos',      class: 'bg-purple-50 text-purple-700 border-purple-200',    dot: 'bg-purple-500',  step: 0 },
-  en_evaluacion:           { label: 'En evaluación',           class: 'bg-blue-50 text-blue-700 border-blue-200',          dot: 'bg-blue-500',    step: 1 },
-  pendiente_aprobacion:    { label: 'Pend. aprobación',        class: 'bg-amber-50 text-amber-700 border-amber-200',       dot: 'bg-amber-500',   step: 1 },
-  aprobada:                { label: 'Aprobada',                class: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500', step: 2 },
-  rechazada:               { label: 'Rechazada',               class: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-500',     step: -1 },
-  asignada:                { label: 'Asignada',                class: 'bg-blue-50 text-blue-700 border-blue-200',          dot: 'bg-blue-500',    step: 1 },
-  en_ejecucion:            { label: 'En ejecución',            class: 'bg-amber-50 text-amber-700 border-amber-200',       dot: 'bg-amber-500',   step: 2 },
-  finalizada:              { label: 'Finalizada',              class: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500', step: 3 },
-  observada:               { label: 'Observada',               class: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-500',     step: -1 },
+  creada:                      { label: 'Creada',                      class: 'bg-slate-100 text-slate-600 border-slate-200',      dot: 'bg-slate-400',   step: 0 },
+  pendiente_presupuestos:      { label: 'Pend. presupuestos',          class: 'bg-purple-50 text-purple-700 border-purple-200',    dot: 'bg-purple-500',  step: 0 },
+  en_evaluacion:               { label: 'En evaluación',               class: 'bg-blue-50 text-blue-700 border-blue-200',          dot: 'bg-blue-500',    step: 1 },
+  en_votacion_comite:          { label: 'En votación Comité',          class: 'bg-violet-50 text-violet-700 border-violet-200',    dot: 'bg-violet-500',  step: 1 },
+  aprobado_comite:             { label: 'Aprobado por Comité',         class: 'bg-emerald-50 text-emerald-600 border-emerald-200', dot: 'bg-emerald-500', step: 2 },
+  rechazado_comite:            { label: 'Rechazado por Comité',        class: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-500',     step: -1 },
+  pendiente_aprobacion_admin:  { label: 'Pend. aprobación Admin',      class: 'bg-amber-50 text-amber-700 border-amber-200',       dot: 'bg-amber-500',   step: 2 },
+  aprobado_final:              { label: 'Aprobado Final',              class: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500', step: 3 },
+  rechazado_final:             { label: 'Rechazado Final',             class: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-500',     step: -1 },
+  asignada:                    { label: 'Asignada',                    class: 'bg-blue-50 text-blue-700 border-blue-200',          dot: 'bg-blue-500',    step: 1 },
+  en_ejecucion:                { label: 'En ejecución',                class: 'bg-amber-50 text-amber-700 border-amber-200',       dot: 'bg-amber-500',   step: 2 },
+  finalizada:                  { label: 'Finalizada',                  class: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500', step: 3 },
+  observada:                   { label: 'Observada',                   class: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-500',     step: -1 },
 };
 
 const PRIORITY_MAP = {
@@ -42,6 +49,13 @@ const WORKFLOW = [
   { key: 'asignada',     label: 'Asignada',     icon: User },
   { key: 'en_ejecucion', label: 'En ejecución', icon: Play },
   { key: 'finalizada',   label: 'Finalizada',   icon: CheckCircle2 },
+];
+
+// States that belong to the budget/committee flow
+const BUDGET_FLOW_STATUSES = [
+  'pendiente_presupuestos', 'en_evaluacion',
+  'en_votacion_comite', 'aprobado_comite', 'rechazado_comite',
+  'pendiente_aprobacion_admin', 'aprobado_final', 'rechazado_final',
 ];
 
 export default function TaskDetail() {
@@ -68,6 +82,13 @@ export default function TaskDetail() {
     enabled: !!user?.email,
   });
 
+  const { data: communityData = [] } = useQuery({
+    queryKey: ['community', task?.community_id],
+    queryFn: () => base44.entities.Community.filter({ id: task?.community_id }),
+    enabled: !!task?.community_id,
+  });
+
+  const communityConfig = communityData[0] || {};
   const communityRole = myMemberships.find(m => m.community_id === task?.community_id)?.role;
   const isAdmin = isSuperAdmin(user);
   const canModifyStatus = canStartFinishTask(user?.role, communityRole, task?.assigned_to, user?.email);
@@ -130,18 +151,21 @@ export default function TaskDetail() {
   const isOverdue = task.due_date && new Date(task.due_date) < new Date() && !['finalizada', 'observada'].includes(task.status);
   const isObserved = task.status === 'observada';
   const isFinished = task.status === 'finalizada';
+  const isBudgetFlow = BUDGET_FLOW_STATUSES.includes(task.status);
 
-  // Checklist-driven progress
   const hasChecklist = (task.checklist_items?.length ?? 0) > 0;
   const checklistPct = hasChecklist
     ? Math.round((task.checklist_items.filter(i => i.completed).length / task.checklist_items.length) * 100)
     : null;
 
-  // Manual progress (0-100) — only used when no checklist
   const progressPct = isFinished ? 100 : (localProgress !== null ? localProgress : (task.progress ?? 0));
   const displayedProgress = isFinished ? 100 : (hasChecklist ? checklistPct : progressPct);
   const isDirty = !hasChecklist && localProgress !== null && localProgress !== (task.progress ?? 0);
   const canFinish = !hasChecklist || checklistPct === 100;
+
+  // Show committee voting panel for budget-flow tasks with committee statuses
+  const showCommitteePanel = task.task_type === 'reparacion' && task.requires_budget &&
+    ['en_votacion_comite', 'aprobado_comite', 'rechazado_comite', 'pendiente_aprobacion_admin', 'aprobado_final'].includes(task.status);
 
   return (
     <div className="space-y-5 max-w-4xl animate-in fade-in duration-300">
@@ -162,6 +186,11 @@ export default function TaskDetail() {
               <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-md border", priority.class)}>
                 {priority.label}
               </span>
+              {task.task_type === 'reparacion' && (
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-md border bg-violet-50 text-violet-700 border-violet-200 flex items-center gap-1">
+                  <DollarSign className="h-3 w-3" /> Reparación
+                </span>
+              )}
               {isOverdue && (
                 <span className="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2.5 py-1 rounded-md flex items-center gap-1">
                   <AlertTriangle className="h-3 w-3" /> Vencida
@@ -185,8 +214,6 @@ export default function TaskDetail() {
 
       {/* ── Progress / Workflow ── */}
       <div className="bg-card border border-border rounded-xl p-5 space-y-4">
-
-        {/* Manual progress control */}
         <div>
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-semibold text-foreground">% de Avance</p>
@@ -203,19 +230,17 @@ export default function TaskDetail() {
             </div>
           </div>
 
-          {/* Bar */}
           <div className="h-3 bg-muted rounded-full overflow-hidden mb-3">
             <div
               className={cn(
                 "h-full rounded-full transition-all duration-500",
-                isObserved ? "bg-red-500" : displayedProgress === 100 ? "bg-emerald-500" : displayedProgress >= 75 ? "bg-primary" : displayedProgress >= 40 ? "bg-amber-500" : "bg-primary"
+                isObserved ? "bg-red-500" : displayedProgress === 100 ? "bg-emerald-500" : "bg-primary"
               )}
               style={{ width: `${displayedProgress}%` }}
             />
           </div>
 
-          {/* Slider controls — only for active tasks WITHOUT checklist */}
-          {!isFinished && !isObserved && canModifyStatus && !hasChecklist && (
+          {!isFinished && !isObserved && canModifyStatus && !hasChecklist && !isBudgetFlow && (
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
                 {[10, 25, 50].map(step => (
@@ -361,14 +386,23 @@ export default function TaskDetail() {
         <BudgetPanel task={task} canApprove={isAdmin || canObserve} user={user} />
       )}
 
-      {/* ── Checklist (if task from maintenance) ── */}
+      {/* ── Committee Voting Panel ── */}
+      {showCommitteePanel && (
+        <CommitteeVotingPanel
+          task={task}
+          user={user}
+          communityConfig={communityConfig}
+          onVoteComplete={() => queryClient.invalidateQueries({ queryKey: ['task', taskId] })}
+        />
+      )}
+
+      {/* ── Checklist ── */}
       {(task.checklist_items?.length > 0) && (
         <ChecklistPanel task={task} canEdit={(canModifyStatus || isAdmin) && !['finalizada', 'observada', 'cerrada_fin_año'].includes(task.status)} />
       )}
 
       {/* ── Details + Evidence ── */}
       <div className="grid md:grid-cols-2 gap-5">
-        {/* Details */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Detalles</CardTitle>
@@ -421,6 +455,19 @@ export default function TaskDetail() {
                   <p className="text-sm font-medium">{task.supplier_name || task.provider_name || '—'}</p>
                 </div>
               </div>
+              {task.committee_votes_approve > 0 || task.committee_votes_reject > 0 ? (
+                <div className="flex items-start gap-2">
+                  <Users className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Votos Comité</p>
+                    <p className="text-sm font-medium">
+                      <span className="text-emerald-600">{task.committee_votes_approve} ✓</span>
+                      {' / '}
+                      <span className="text-red-500">{task.committee_votes_reject} ✗</span>
+                    </p>
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             {/* Timestamps */}
@@ -429,6 +476,18 @@ export default function TaskDetail() {
                 <span className="text-xs text-muted-foreground">Creada</span>
                 <span className="text-xs font-medium">{format(new Date(task.created_date), "d MMM yyyy", { locale: es })}</span>
               </div>
+              {task.committee_sent_at && (
+                <div className="flex justify-between">
+                  <span className="text-xs text-muted-foreground">Enviada a comité</span>
+                  <span className="text-xs font-medium">{format(new Date(task.committee_sent_at), "d MMM yyyy", { locale: es })}</span>
+                </div>
+              )}
+              {task.committee_approved_at && (
+                <div className="flex justify-between">
+                  <span className="text-xs text-muted-foreground">Aprobada por comité</span>
+                  <span className="text-xs font-medium text-emerald-600">{format(new Date(task.committee_approved_at), "d MMM yyyy", { locale: es })}</span>
+                </div>
+              )}
               {task.started_at && (
                 <div className="flex justify-between">
                   <span className="text-xs text-muted-foreground">Iniciada</span>
@@ -445,7 +504,6 @@ export default function TaskDetail() {
           </CardContent>
         </Card>
 
-        {/* Evidence */}
         <div className="space-y-4">
           <EvidenceUpload taskId={taskId} communityId={task.community_id} userName={user?.full_name || user?.email} />
           <EvidenceList taskId={taskId} />

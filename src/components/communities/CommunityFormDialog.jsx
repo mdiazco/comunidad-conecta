@@ -9,10 +9,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { REGIONES, getComunas } from '@/lib/chileanData';
 import { toast } from 'sonner';
+import { Switch } from '@/components/ui/switch';
 
 const EMPTY = {
   name: '', address: '', region: '', comuna: '', type: 'edificio',
-  units: '', rut: '', contact_email: '', description: '', year_built: ''
+  units: '', rut: '', contact_email: '', description: '', year_built: '',
+  approval_mode: 'majority', min_committee_votes: 1, admin_can_veto: true
 };
 
 export default function CommunityFormDialog({ open, onOpenChange, community }) {
@@ -114,6 +116,35 @@ export default function CommunityFormDialog({ open, onOpenChange, community }) {
             <Label>Descripción</Label>
             <Textarea value={form.description} onChange={e => set('description', e.target.value)} rows={3} />
           </div>
+
+          {/* Configuración de votación del comité */}
+          <div className="border border-border rounded-lg p-4 space-y-3 bg-muted/20">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Configuración de votación del Comité</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Modo de aprobación</Label>
+                <Select value={form.approval_mode} onValueChange={v => set('approval_mode', v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="majority">Mayoría simple</SelectItem>
+                    <SelectItem value="unanimity">Unanimidad</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Mín. votos requeridos</Label>
+                <Input type="number" min="1" value={form.min_committee_votes} onChange={e => set('min_committee_votes', Number(e.target.value))} />
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Administrador puede vetar al Comité</p>
+                <p className="text-xs text-muted-foreground">Permite al admin rechazar aunque el comité haya aprobado</p>
+              </div>
+              <Switch checked={form.admin_can_veto} onCheckedChange={v => set('admin_can_veto', v)} />
+            </div>
+          </div>
+
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
             <Button type="submit" disabled={mutation.isPending}>

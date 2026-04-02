@@ -39,9 +39,13 @@
         "creada",
         "pendiente_presupuestos",
         "en_evaluacion",
-        "pendiente_aprobacion",
-        "aprobada",
-        "rechazada",
+        "pendiente_aprobacion_comite",
+        "en_votacion_comite",
+        "aprobado_comite",
+        "rechazado_comite",
+        "pendiente_aprobacion_admin",
+        "aprobado_final",
+        "rechazado_final",
         "asignada",
         "en_ejecucion",
         "finalizada",
@@ -168,7 +172,7 @@
     },
     "approved_by": {
       "type": "string",
-      "description": "Email del usuario que aprob\u00f3 el presupuesto"
+      "description": "Email del usuario que aprob\u00f3 el presupuesto (admin final)"
     },
     "approved_by_name": {
       "type": "string",
@@ -176,11 +180,46 @@
     },
     "approved_at": {
       "type": "string",
-      "description": "Fecha y hora de aprobaci\u00f3n"
+      "description": "Fecha y hora de aprobaci\u00f3n final"
     },
     "rejection_reason": {
       "type": "string",
       "description": "Motivo de rechazo (si aplica)"
+    },
+    "committee_sent_at": {
+      "type": "string",
+      "description": "Fecha en que se envi\u00f3 a votaci\u00f3n del comit\u00e9"
+    },
+    "committee_sent_by": {
+      "type": "string",
+      "description": "Email de quien envi\u00f3 a comit\u00e9"
+    },
+    "committee_approved_at": {
+      "type": "string",
+      "description": "Fecha de aprobaci\u00f3n del comit\u00e9"
+    },
+    "committee_rejection_reason": {
+      "type": "string",
+      "description": "Motivo de rechazo del comit\u00e9"
+    },
+    "committee_suggested_budget_id": {
+      "type": "string",
+      "description": "ID del presupuesto sugerido por el admin al comit\u00e9"
+    },
+    "committee_votes_approve": {
+      "type": "number",
+      "default": 0,
+      "description": "Total votos aprobatorios del comit\u00e9"
+    },
+    "committee_votes_reject": {
+      "type": "number",
+      "default": 0,
+      "description": "Total votos de rechazo del comit\u00e9"
+    },
+    "work_order_generated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si se gener\u00f3 la orden de trabajo"
     }
   },
   "required": [

@@ -6,12 +6,13 @@ import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Plus, DollarSign, CheckCircle2, TrendingDown, TrendingUp,
-  AlertTriangle, ThumbsUp, ThumbsDown, Trophy, Clock, User
+  AlertTriangle, ThumbsUp, ThumbsDown, Trophy, Clock, User, Users
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import BudgetFormDialog from './BudgetFormDialog';
+import SendToCommitteeDialog from './SendToCommitteeDialog';
 
 const MIN_BUDGETS = 3;
 
@@ -19,9 +20,17 @@ function formatCLP(n) {
   return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n);
 }
 
+// Statuses where budgets are locked (no add/select)
+const LOCKED_STATUSES = [
+  'en_votacion_comite', 'aprobado_comite', 'rechazado_comite',
+  'pendiente_aprobacion_admin', 'aprobado_final', 'rechazado_final',
+  'asignada', 'en_ejecucion', 'finalizada', 'observada', 'cerrada_fin_año'
+];
+
 export default function BudgetPanel({ task, canApprove, user }) {
   const queryClient = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
+  const [sendToCommitteeOpen, setSendToCommitteeOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectForm, setShowRejectForm] = useState(false);
 
@@ -30,6 +39,14 @@ export default function BudgetPanel({ task, canApprove, user }) {
     queryFn: () => base44.entities.Budget.filter({ task_id: task.id }),
     enabled: !!task.id,
   });
+
+  const { data: members = [] } = useQuery({
+    queryKey: ['community-members', task.community_id],
+    queryFn: () => base44.entities.CommunityMember.filter({ community_id: task.community_id, status: 'active' }),
+    enabled: !!task.community_id,
+  });
+
+  const committeeMembers = members.filter(m => m.role === 'comite');
 
   const taskMutation = useMutation({
     mutationFn: (data) => base44.entities.Task.update(task.id, data),
@@ -50,23 +67,19 @@ export default function BudgetPanel({ task, canApprove, user }) {
   const avgAmount = budgets.length > 0 ? budgets.reduce((s, b) => s + b.amount, 0) / budgets.length : null;
   const selectedBudget = budgets.find(b => b.is_selected);
 
+  const isLocked = LOCKED_STATUSES.includes(task.status);
   const canAdvanceToEvaluation = budgets.length >= MIN_BUDGETS && task.status === 'pendiente_presupuestos';
-  const canApproveAction = canApprove && task.status === 'pendiente_aprobacion' && selectedBudget;
+  // "Send to committee" replaces direct approval for reparacion tasks
+  const canSendToCommittee = canApprove && task.status === 'en_evaluacion' && budgets.length >= MIN_BUDGETS;
 
   const handleSelectBudget = async (budget) => {
-    if (!canApprove) return;
-    // Deselect others
+    if (!canApprove || isLocked) return;
     await Promise.all(
       budgets.filter(b => b.id !== budget.id && b.is_selected)
         .map(b => base44.entities.Budget.update(b.id, { is_selected: false }))
     );
     await base44.entities.Budget.update(budget.id, { is_selected: true });
     queryClient.invalidateQueries({ queryKey: ['budgets', task.id] });
-
-    // Move to pendiente_aprobacion if in en_evaluacion
-    if (task.status === 'en_evaluacion') {
-      taskMutation.mutate({ status: 'pendiente_aprobacion' });
-    }
   };
 
   const handleAdvanceToEvaluation = () => {
@@ -74,33 +87,8 @@ export default function BudgetPanel({ task, canApprove, user }) {
     toast.success('Tarea avanzada a evaluación');
   };
 
-  const handleApprove = () => {
-    if (!selectedBudget) { toast.error('Selecciona un presupuesto primero'); return; }
-    const now = new Date().toISOString();
-    budgetMutation.mutate({
-      id: selectedBudget.id,
-      data: {
-        is_approved: true,
-        approved_by: user?.email,
-        approved_by_name: user?.full_name || user?.email,
-        approved_at: now,
-      }
-    });
-    taskMutation.mutate({
-      status: 'aprobada',
-      selected_budget_id: selectedBudget.id,
-      selected_budget_supplier: selectedBudget.supplier_name,
-      selected_budget_amount: selectedBudget.amount,
-      approved_by: user?.email,
-      approved_by_name: user?.full_name || user?.email,
-      approved_at: now,
-    });
-    toast.success('Presupuesto aprobado — tarea lista para ejecución');
-  };
-
   const handleReject = () => {
     if (!rejectionReason.trim()) { toast.error('Escribe el motivo de rechazo'); return; }
-    // Reset budgets selection
     Promise.all(budgets.filter(b => b.is_selected).map(b =>
       base44.entities.Budget.update(b.id, { is_selected: false, is_approved: false })
     )).then(() => queryClient.invalidateQueries({ queryKey: ['budgets', task.id] }));
@@ -111,15 +99,18 @@ export default function BudgetPanel({ task, canApprove, user }) {
     });
     setRejectionReason('');
     setShowRejectForm(false);
-    toast.info('Tarea vuelta a evaluación para nuevos presupuestos');
+    toast.info('Tarea vuelta a evaluación');
   };
 
   const STATUS_LABELS = {
-    pendiente_presupuestos: { label: 'Pendiente de presupuestos', color: 'bg-slate-100 text-slate-600 border-slate-200' },
-    en_evaluacion: { label: 'En evaluación', color: 'bg-blue-50 text-blue-700 border-blue-200' },
-    pendiente_aprobacion: { label: 'Pendiente de aprobación', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-    aprobada: { label: 'Aprobada', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-    rechazada: { label: 'Rechazada', color: 'bg-red-50 text-red-700 border-red-200' },
+    pendiente_presupuestos:     { label: 'Pendiente de presupuestos', color: 'bg-slate-100 text-slate-600 border-slate-200' },
+    en_evaluacion:              { label: 'En evaluación', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+    en_votacion_comite:         { label: 'En votación comité', color: 'bg-violet-50 text-violet-700 border-violet-200' },
+    aprobado_comite:            { label: 'Aprobado por Comité', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    rechazado_comite:           { label: 'Rechazado por Comité', color: 'bg-red-50 text-red-700 border-red-200' },
+    pendiente_aprobacion_admin: { label: 'Pend. aprobación Admin', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+    aprobado_final:             { label: 'Aprobado Final ✓', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    rechazado_final:            { label: 'Rechazado Final', color: 'bg-red-50 text-red-700 border-red-200' },
   };
 
   const statusInfo = STATUS_LABELS[task.status];
@@ -134,7 +125,7 @@ export default function BudgetPanel({ task, canApprove, user }) {
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       {/* Header */}
       <div className="px-5 py-4 border-b border-border flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <div className="p-2 bg-emerald-100 rounded-lg">
             <DollarSign className="h-4 w-4 text-emerald-600" />
           </div>
@@ -150,7 +141,7 @@ export default function BudgetPanel({ task, canApprove, user }) {
             </span>
           )}
         </div>
-        {!['aprobada', 'finalizada', 'observada', 'cerrada_fin_año'].includes(task.status) && (
+        {!isLocked && (
           <Button size="sm" variant="outline" onClick={() => setAddOpen(true)} className="gap-1.5 h-8 text-xs">
             <Plus className="h-3.5 w-3.5" /> Agregar presupuesto
           </Button>
@@ -185,11 +176,11 @@ export default function BudgetPanel({ task, canApprove, user }) {
       )}
 
       {/* Approved banner */}
-      {task.status === 'aprobada' && task.selected_budget_supplier && (
+      {task.status === 'aprobado_final' && task.selected_budget_supplier && (
         <div className="mx-4 mt-4 flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
           <Trophy className="h-5 w-5 text-emerald-600 shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-emerald-700">Presupuesto aprobado</p>
+            <p className="text-sm font-semibold text-emerald-700">Presupuesto aprobado definitivamente</p>
             <p className="text-xs text-emerald-600">
               {task.selected_budget_supplier} — {task.selected_budget_amount ? formatCLP(task.selected_budget_amount) : ''}
             </p>
@@ -229,7 +220,7 @@ export default function BudgetPanel({ task, canApprove, user }) {
             <DollarSign className="h-6 w-6 text-emerald-400" />
           </div>
           <p className="text-sm text-muted-foreground font-medium">No hay presupuestos aún</p>
-          <p className="text-xs text-muted-foreground mt-1">Se requieren mínimo {MIN_BUDGETS} para avanzar a evaluación</p>
+          <p className="text-xs text-muted-foreground mt-1">Se requieren mínimo {MIN_BUDGETS} para avanzar</p>
           <Button size="sm" variant="outline" onClick={() => setAddOpen(true)} className="mt-3 gap-1.5 text-xs">
             <Plus className="h-3.5 w-3.5" /> Agregar primer presupuesto
           </Button>
@@ -241,6 +232,7 @@ export default function BudgetPanel({ task, canApprove, user }) {
             const isMostExpensive = budget.amount === maxAmount && budgets.length > 1;
             const isSelected = budget.is_selected;
             const isApproved = budget.is_approved;
+            const isSuggested = budget.id === task.committee_suggested_budget_id;
 
             return (
               <div
@@ -251,12 +243,10 @@ export default function BudgetPanel({ task, canApprove, user }) {
                   isApproved && 'bg-emerald-50/60',
                 )}
               >
-                {/* Rank */}
                 <div className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold bg-muted text-muted-foreground">
                   {idx + 1}
                 </div>
 
-                {/* Info */}
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-sm font-semibold text-foreground">{budget.supplier_name}</p>
@@ -268,6 +258,11 @@ export default function BudgetPanel({ task, canApprove, user }) {
                     {isMostExpensive && (
                       <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700 border border-red-200 flex items-center gap-0.5">
                         <TrendingUp className="h-2.5 w-2.5" /> Más caro
+                      </span>
+                    )}
+                    {isSuggested && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 border border-blue-200 flex items-center gap-0.5">
+                        <Trophy className="h-2.5 w-2.5" /> Sugerido
                       </span>
                     )}
                     {isApproved && (
@@ -292,7 +287,6 @@ export default function BudgetPanel({ task, canApprove, user }) {
                   </p>
                 </div>
 
-                {/* Amount */}
                 <div className="shrink-0 text-right">
                   <p className={cn(
                     'text-base font-extrabold tabular-nums',
@@ -307,14 +301,13 @@ export default function BudgetPanel({ task, canApprove, user }) {
                     )}>
                       {budget.amount < avgAmount
                         ? `${formatCLP(Math.round(avgAmount - budget.amount))} bajo promedio`
-                        : `${formatCLP(Math.round(budget.amount - avgAmount))} sobre promedio`
-                      }
+                        : `${formatCLP(Math.round(budget.amount - avgAmount))} sobre promedio`}
                     </p>
                   )}
                 </div>
 
-                {/* Select button */}
-                {canApprove && ['en_evaluacion', 'pendiente_aprobacion'].includes(task.status) && (
+                {/* Select button — only in en_evaluacion and not locked */}
+                {canApprove && task.status === 'en_evaluacion' && (
                   <Button
                     size="sm"
                     variant={isSelected ? 'default' : 'outline'}
@@ -345,19 +338,24 @@ export default function BudgetPanel({ task, canApprove, user }) {
           </p>
         )}
 
-        {/* Approve */}
-        {canApproveAction && !showRejectForm && (
-          <>
-            <Button size="sm" onClick={handleApprove} className="gap-1.5 text-xs h-8 bg-emerald-600 hover:bg-emerald-700">
-              <ThumbsUp className="h-3.5 w-3.5" /> Aprobar presupuesto
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => setShowRejectForm(true)} className="gap-1.5 text-xs h-8 border-red-200 text-red-600 hover:bg-red-50">
-              <ThumbsDown className="h-3.5 w-3.5" /> Rechazar
-            </Button>
-          </>
+        {/* Send to committee */}
+        {canSendToCommittee && !showRejectForm && (
+          <Button
+            size="sm"
+            className="gap-1.5 text-xs h-8 bg-violet-600 hover:bg-violet-700"
+            onClick={() => setSendToCommitteeOpen(true)}
+          >
+            <Users className="h-3.5 w-3.5" /> Enviar a votación del Comité
+          </Button>
         )}
 
-        {/* Reject form */}
+        {/* Reject (back to evaluation) — only in en_evaluacion */}
+        {canApprove && task.status === 'en_evaluacion' && !showRejectForm && (
+          <Button size="sm" variant="outline" onClick={() => setShowRejectForm(true)} className="gap-1.5 text-xs h-8 border-red-200 text-red-600 hover:bg-red-50">
+            <ThumbsDown className="h-3.5 w-3.5" /> Rechazar / pedir nuevos
+          </Button>
+        )}
+
         {showRejectForm && (
           <div className="w-full flex flex-col gap-2">
             <Textarea
@@ -376,15 +374,22 @@ export default function BudgetPanel({ task, canApprove, user }) {
           </div>
         )}
 
-        {/* Status info */}
-        {task.status === 'pendiente_aprobacion' && !selectedBudget && (
+        {task.status === 'en_evaluacion' && budgets.length < MIN_BUDGETS && (
           <p className="text-xs text-amber-600 flex items-center gap-1">
-            <AlertTriangle className="h-3 w-3" /> Selecciona un presupuesto para aprobar
+            <AlertTriangle className="h-3 w-3" /> Necesitas {MIN_BUDGETS} presupuestos para enviar al comité
           </p>
         )}
       </div>
 
       <BudgetFormDialog open={addOpen} onOpenChange={setAddOpen} taskId={task.id} communityId={task.community_id} />
+      <SendToCommitteeDialog
+        open={sendToCommitteeOpen}
+        onOpenChange={setSendToCommitteeOpen}
+        task={task}
+        budgets={budgets}
+        user={user}
+        committeeMembers={committeeMembers}
+      />
     </div>
   );
 }

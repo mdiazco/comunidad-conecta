@@ -1,0 +1,48 @@
+{
+  "name": "CommitteeVote",
+  "type": "object",
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "description": "ID de la tarea asociada"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "ID de la comunidad"
+    },
+    "voter_email": {
+      "type": "string",
+      "description": "Email del miembro del comit\u00e9 que vota"
+    },
+    "voter_name": {
+      "type": "string",
+      "description": "Nombre del votante"
+    },
+    "vote": {
+      "type": "string",
+      "enum": [
+        "approve",
+        "reject"
+      ],
+      "description": "Voto: aprobar o rechazar"
+    },
+    "comment": {
+      "type": "string",
+      "description": "Comentario del votante"
+    },
+    "budget_id": {
+      "type": "string",
+      "description": "ID del presupuesto sugerido al momento del voto"
+    },
+    "voted_at": {
+      "type": "string",
+      "description": "Fecha y hora del voto (ISO)"
+    }
+  },
+  "required": [
+    "task_id",
+    "community_id",
+    "voter_email",
+    "vote"
+  ]
+}

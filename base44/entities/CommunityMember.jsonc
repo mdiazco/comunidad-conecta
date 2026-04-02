@@ -1,0 +1,41 @@
+{
+  "name": "CommunityMember",
+  "type": "object",
+  "properties": {
+    "community_id": {
+      "type": "string",
+      "description": "ID de la comunidad"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email del usuario"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Nombre del usuario"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "administrador",
+        "comite",
+        "equipo",
+        "operativo"
+      ],
+      "description": "Rol en la comunidad: administrador (gesti\u00f3n total), comite (votaci\u00f3n de presupuestos), equipo (operativo interno), operativo (ejecuci\u00f3n)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "community_id",
+    "user_email",
+    "role"
+  ]
+}

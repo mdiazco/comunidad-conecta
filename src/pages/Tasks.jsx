@@ -17,16 +17,19 @@ import { cn } from '@/lib/utils';
 import PermissionGate from '@/components/rbac/PermissionGate';
 
 const STATUS_MAP = {
-  creada:                 { label: 'Creada',             class: 'bg-slate-100 text-slate-600 border-slate-200',      dot: 'bg-slate-400' },
-  pendiente_presupuestos: { label: 'Pend. presupuestos', class: 'bg-purple-50 text-purple-700 border-purple-200',    dot: 'bg-purple-500' },
-  en_evaluacion:          { label: 'En evaluación',      class: 'bg-blue-50 text-blue-700 border-blue-200',          dot: 'bg-blue-500' },
-  pendiente_aprobacion:   { label: 'Pend. aprobación',   class: 'bg-amber-50 text-amber-700 border-amber-200',       dot: 'bg-amber-500' },
-  aprobada:               { label: 'Aprobada',           class: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
-  rechazada:              { label: 'Rechazada',          class: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-500' },
-  asignada:               { label: 'Asignada',           class: 'bg-blue-50 text-blue-700 border-blue-200',          dot: 'bg-blue-500' },
-  en_ejecucion:           { label: 'En ejecución',       class: 'bg-amber-50 text-amber-700 border-amber-200',       dot: 'bg-amber-500' },
-  finalizada:             { label: 'Finalizada',         class: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
-  observada:              { label: 'Observada',          class: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-500' },
+  creada:                     { label: 'Creada',                    class: 'bg-slate-100 text-slate-600 border-slate-200',      dot: 'bg-slate-400' },
+  pendiente_presupuestos:     { label: 'Pend. presupuestos',        class: 'bg-purple-50 text-purple-700 border-purple-200',    dot: 'bg-purple-500' },
+  en_evaluacion:              { label: 'En evaluación',             class: 'bg-blue-50 text-blue-700 border-blue-200',          dot: 'bg-blue-500' },
+  en_votacion_comite:         { label: 'Votación Comité',           class: 'bg-violet-50 text-violet-700 border-violet-200',    dot: 'bg-violet-500' },
+  aprobado_comite:            { label: 'Aprobado Comité',           class: 'bg-emerald-50 text-emerald-600 border-emerald-200', dot: 'bg-emerald-400' },
+  rechazado_comite:           { label: 'Rechazado Comité',          class: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-500' },
+  pendiente_aprobacion_admin: { label: 'Pend. aprobación Admin',    class: 'bg-amber-50 text-amber-700 border-amber-200',       dot: 'bg-amber-500' },
+  aprobado_final:             { label: 'Aprobado Final',            class: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
+  rechazado_final:            { label: 'Rechazado Final',           class: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-500' },
+  asignada:                   { label: 'Asignada',                  class: 'bg-blue-50 text-blue-700 border-blue-200',          dot: 'bg-blue-500' },
+  en_ejecucion:               { label: 'En ejecución',              class: 'bg-amber-50 text-amber-700 border-amber-200',       dot: 'bg-amber-500' },
+  finalizada:                 { label: 'Finalizada',                class: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
+  observada:                  { label: 'Observada',                 class: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-500' },
 };
 
 const PRIORITY_MAP = {
@@ -240,9 +243,12 @@ export default function Tasks() {
               <SelectItem value="creada">Creada</SelectItem>
               <SelectItem value="pendiente_presupuestos">Pend. presupuestos</SelectItem>
               <SelectItem value="en_evaluacion">En evaluación</SelectItem>
-              <SelectItem value="pendiente_aprobacion">Pend. aprobación</SelectItem>
-              <SelectItem value="aprobada">Aprobada</SelectItem>
-              <SelectItem value="rechazada">Rechazada</SelectItem>
+              <SelectItem value="en_votacion_comite">Votación Comité</SelectItem>
+              <SelectItem value="aprobado_comite">Aprobado Comité</SelectItem>
+              <SelectItem value="rechazado_comite">Rechazado Comité</SelectItem>
+              <SelectItem value="pendiente_aprobacion_admin">Pend. aprobación Admin</SelectItem>
+              <SelectItem value="aprobado_final">Aprobado Final</SelectItem>
+              <SelectItem value="rechazado_final">Rechazado Final</SelectItem>
               <SelectItem value="asignada">Asignada</SelectItem>
               <SelectItem value="en_ejecucion">En ejecución</SelectItem>
               <SelectItem value="finalizada">Finalizada</SelectItem>
