@@ -165,6 +165,7 @@ export default function TaskFormDialog({ open, onOpenChange, task, communityId }
               </button>
             </div>
           )}
+          {!(form.task_type === 'reparacion' && form.requires_budget) && (
           <div>
             <Label>Proveedor / Contratista</Label>
             <Select value={form.supplier_id || ''} onValueChange={v => set('supplier_id', v)}>
@@ -179,6 +180,7 @@ export default function TaskFormDialog({ open, onOpenChange, task, communityId }
               </SelectContent>
             </Select>
           </div>
+          )}
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
             <Button type="submit" disabled={mutation.isPending}>
