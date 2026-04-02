@@ -181,6 +181,7 @@ export default function CommitteeVotingPanel({ task, user, communityConfig, onVo
     },
   });
 
+  const isPreVoting = task.status === 'en_evaluacion';
   const isVotingOpen = ['en_votacion_comite', 'pendiente_aprobacion_comite'].includes(task.status);
   const isAdminApprovalPending = task.status === 'pendiente_aprobacion_admin';
   const isFinalApproved = task.status === 'aprobado_final';
@@ -208,6 +209,36 @@ export default function CommitteeVotingPanel({ task, user, communityConfig, onVo
           <StatusBadge status={task.status} />
         </div>
       </div>
+
+      {/* Pre-voting: show committee members who will vote */}
+      {isPreVoting && committeeMembers.length > 0 && (
+        <div className="px-5 py-4 border-b border-border">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Miembros que votarán</p>
+          <div className="space-y-1.5">
+            {committeeMembers.map(member => (
+              <div key={member.id} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/40">
+                <div className="h-6 w-6 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
+                  <span className="text-[10px] font-bold text-violet-600">
+                    {(member.user_name || member.user_email || '?')[0].toUpperCase()}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium truncate">{member.user_name || member.user_email}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{member.user_email}</p>
+                </div>
+                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  <Clock className="h-3 w-3" /> Pendiente envío
+                </span>
+              </div>
+            ))}
+          </div>
+          {committeeMembers.length === 0 && (
+            <p className="text-xs text-muted-foreground italic text-center py-2">
+              No hay miembros de comité asignados a esta comunidad
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Suggested budget */}
       {suggestedBudget && (

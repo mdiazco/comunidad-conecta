@@ -163,9 +163,14 @@ export default function TaskDetail() {
   const isDirty = !hasChecklist && localProgress !== null && localProgress !== (task.progress ?? 0);
   const canFinish = !hasChecklist || checklistPct === 100;
 
-  // Show committee voting panel for budget-flow tasks with committee statuses
+  // Show committee voting panel for reparacion tasks requiring budget — always visible in the flow
+  const isCommitteeMemberOfTask = myMemberships.some(
+    m => m.community_id === task?.community_id && m.role === 'comite' && m.status === 'active'
+  );
   const showCommitteePanel = task.task_type === 'reparacion' && task.requires_budget &&
-    ['en_votacion_comite', 'aprobado_comite', 'rechazado_comite', 'pendiente_aprobacion_admin', 'aprobado_final'].includes(task.status);
+    (isAdmin || isCommitteeMemberOfTask) &&
+    ['en_evaluacion', 'en_votacion_comite', 'aprobado_comite', 'rechazado_comite',
+     'pendiente_aprobacion_admin', 'aprobado_final', 'rechazado_final'].includes(task.status);
 
   return (
     <div className="space-y-5 max-w-4xl animate-in fade-in duration-300">
