@@ -24,6 +24,7 @@ import Providers from '@/pages/Providers';
 import BuildingHealth from '@/pages/BuildingHealth';
 import RolesManagement from '@/pages/RolesManagement';
 import BudgetDashboard from '@/pages/BudgetDashboard';
+import CommitteeMembers from '@/pages/CommitteeMembers';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -67,6 +68,7 @@ const AuthenticatedApp = () => {
         <Route path="/building-health" element={<BuildingHealth />} />
         <Route path="/roles" element={<RolesManagement />} />
         <Route path="/budget-dashboard" element={<BudgetDashboard />} />
+        <Route path="/committee-members" element={<CommitteeMembers />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

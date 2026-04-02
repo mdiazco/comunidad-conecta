@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Building2, Users, ClipboardList, 
-  Bell, LogOut, ChevronLeft, ChevronRight, X, Store, Wrench, Star, HeartPulse, Shield, BarChart2
+  Bell, LogOut, ChevronLeft, ChevronRight, X, Store, Wrench, Star, HeartPulse, Shield, BarChart2, UserCog
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { path: '/providers',       icon: Star,             label: 'Scoring Proveedores', module: 'proveedores' },
   { path: '/suppliers',       icon: Store,            label: 'Proveedores',       module: 'proveedores' },
   { path: '/building-health', icon: HeartPulse,       label: 'Salud del Edificio', module: 'salud' },
+  { path: '/committee-members', icon: UserCog,          label: 'Comité',            module: 'usuarios' },
   { path: '/users',           icon: Users,            label: 'Usuarios',          module: 'usuarios' },
   { path: '/notifications',   icon: Bell,             label: 'Notificaciones',    module: 'notificaciones' },
   { path: '/roles',           icon: Shield,           label: 'Roles y Permisos',  module: null, superadminOnly: true, alwaysVisible: true },
