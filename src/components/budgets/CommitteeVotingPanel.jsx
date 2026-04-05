@@ -181,8 +181,8 @@ export default function CommitteeVotingPanel({ task, user, communityConfig, onVo
     },
   });
 
-  const isPreVoting = task.status === 'en_evaluacion';
-  const isVotingOpen = ['en_votacion_comite', 'pendiente_aprobacion_comite'].includes(task.status);
+  const isPreVoting = task.status === 'pendiente_aprobacion_comite';
+  const isVotingOpen = task.status === 'en_votacion_comite';
   const isAdminApprovalPending = task.status === 'pendiente_aprobacion_admin';
   const isFinalApproved = task.status === 'aprobado_final';
 
@@ -499,7 +499,7 @@ export default function CommitteeVotingPanel({ task, user, communityConfig, onVo
 
 function StatusBadge({ status }) {
   const map = {
-    pendiente_aprobacion_comite: { label: 'Esperando envío', class: 'bg-slate-100 text-slate-600 border-slate-200' },
+    pendiente_aprobacion_comite: { label: 'Pend. envío al Comité', class: 'bg-amber-50 text-amber-700 border-amber-200' },
     en_votacion_comite:          { label: 'En votación', class: 'bg-violet-50 text-violet-700 border-violet-200' },
     aprobado_comite:             { label: 'Aprobado por Comité', class: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
     rechazado_comite:            { label: 'Rechazado por Comité', class: 'bg-red-50 text-red-700 border-red-200' },

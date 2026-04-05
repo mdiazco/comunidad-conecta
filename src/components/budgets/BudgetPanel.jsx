@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Plus, DollarSign, CheckCircle2, TrendingDown, TrendingUp,
-  AlertTriangle, ThumbsUp, ThumbsDown, Trophy, Clock, User, Users
+  AlertTriangle, ThumbsUp, ThumbsDown, Trophy, Clock, User, Users, ShieldCheck
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -69,8 +69,10 @@ export default function BudgetPanel({ task, canApprove, user }) {
 
   const isLocked = LOCKED_STATUSES.includes(task.status);
   const canAdvanceToEvaluation = budgets.length >= MIN_BUDGETS && task.status === 'pendiente_presupuestos';
-  // "Send to committee" replaces direct approval for reparacion tasks
-  const canSendToCommittee = canApprove && task.status === 'en_evaluacion' && budgets.length >= MIN_BUDGETS;
+  // Admin gives VoBo (visto bueno) — advances from en_evaluacion to pendiente_aprobacion_comite
+  const canGiveVoBo = canApprove && task.status === 'en_evaluacion' && budgets.length >= MIN_BUDGETS && !!selectedBudget;
+  // "Send to committee" — from pendiente_aprobacion_comite admin opens the SendToCommittee dialog
+  const canSendToCommittee = canApprove && task.status === 'pendiente_aprobacion_comite';
 
   const handleSelectBudget = async (budget) => {
     if (!canApprove || isLocked) return;
@@ -87,6 +89,14 @@ export default function BudgetPanel({ task, canApprove, user }) {
     toast.success('Tarea avanzada a evaluación');
   };
 
+  const handleGiveVoBo = () => {
+    taskMutation.mutate({
+      status: 'pendiente_aprobacion_comite',
+      committee_suggested_budget_id: selectedBudget?.id,
+    });
+    toast.success('Visto Bueno otorgado — listo para enviar al Comité');
+  };
+
   const handleReject = () => {
     if (!rejectionReason.trim()) { toast.error('Escribe el motivo de rechazo'); return; }
     Promise.all(budgets.filter(b => b.is_selected).map(b =>
@@ -96,6 +106,7 @@ export default function BudgetPanel({ task, canApprove, user }) {
       status: 'en_evaluacion',
       rejection_reason: rejectionReason,
       selected_budget_id: '',
+      committee_suggested_budget_id: '',
     });
     setRejectionReason('');
     setShowRejectForm(false);
@@ -103,14 +114,15 @@ export default function BudgetPanel({ task, canApprove, user }) {
   };
 
   const STATUS_LABELS = {
-    pendiente_presupuestos:     { label: 'Pendiente de presupuestos', color: 'bg-slate-100 text-slate-600 border-slate-200' },
-    en_evaluacion:              { label: 'En evaluación', color: 'bg-blue-50 text-blue-700 border-blue-200' },
-    en_votacion_comite:         { label: 'En votación comité', color: 'bg-violet-50 text-violet-700 border-violet-200' },
-    aprobado_comite:            { label: 'Aprobado por Comité', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-    rechazado_comite:           { label: 'Rechazado por Comité', color: 'bg-red-50 text-red-700 border-red-200' },
-    pendiente_aprobacion_admin: { label: 'Pend. aprobación Admin', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-    aprobado_final:             { label: 'Aprobado Final ✓', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-    rechazado_final:            { label: 'Rechazado Final', color: 'bg-red-50 text-red-700 border-red-200' },
+    pendiente_presupuestos:       { label: 'Pendiente de presupuestos', color: 'bg-slate-100 text-slate-600 border-slate-200' },
+    en_evaluacion:                { label: 'En evaluación', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+    pendiente_aprobacion_comite:  { label: 'VoBo Admin — Pend. envío al Comité', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+    en_votacion_comite:           { label: 'En votación comité', color: 'bg-violet-50 text-violet-700 border-violet-200' },
+    aprobado_comite:              { label: 'Aprobado por Comité', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    rechazado_comite:             { label: 'Rechazado por Comité', color: 'bg-red-50 text-red-700 border-red-200' },
+    pendiente_aprobacion_admin:   { label: 'Pend. aprobación final Admin', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+    aprobado_final:               { label: 'Aprobado Final ✓', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    rechazado_final:              { label: 'Rechazado Final', color: 'bg-red-50 text-red-700 border-red-200' },
   };
 
   const statusInfo = STATUS_LABELS[task.status];
@@ -306,8 +318,8 @@ export default function BudgetPanel({ task, canApprove, user }) {
                   )}
                 </div>
 
-                {/* Select button — only in en_evaluacion and not locked */}
-                {canApprove && task.status === 'en_evaluacion' && (
+                {/* Select button — in en_evaluacion and pendiente_aprobacion_comite */}
+                {canApprove && ['en_evaluacion', 'pendiente_aprobacion_comite'].includes(task.status) && (
                   <Button
                     size="sm"
                     variant={isSelected ? 'default' : 'outline'}
@@ -338,7 +350,24 @@ export default function BudgetPanel({ task, canApprove, user }) {
           </p>
         )}
 
-        {/* Send to committee */}
+        {/* VoBo Admin — advance from en_evaluacion → pendiente_aprobacion_comite */}
+        {canGiveVoBo && !showRejectForm && (
+          <Button
+            size="sm"
+            className="gap-1.5 text-xs h-8 bg-amber-600 hover:bg-amber-700"
+            onClick={handleGiveVoBo}
+            disabled={taskMutation.isPending}
+          >
+            <ShieldCheck className="h-3.5 w-3.5" /> Dar Visto Bueno → Comité
+          </Button>
+        )}
+        {canApprove && task.status === 'en_evaluacion' && !selectedBudget && budgets.length >= MIN_BUDGETS && !showRejectForm && (
+          <p className="text-xs text-amber-600 flex items-center gap-1">
+            <AlertTriangle className="h-3 w-3" /> Selecciona un presupuesto para dar el visto bueno
+          </p>
+        )}
+
+        {/* Send to committee — from pendiente_aprobacion_comite */}
         {canSendToCommittee && !showRejectForm && (
           <Button
             size="sm"
@@ -349,8 +378,8 @@ export default function BudgetPanel({ task, canApprove, user }) {
           </Button>
         )}
 
-        {/* Reject (back to evaluation) — only in en_evaluacion */}
-        {canApprove && task.status === 'en_evaluacion' && !showRejectForm && (
+        {/* Reject (back to evaluation) — only in en_evaluacion or pendiente_aprobacion_comite */}
+        {canApprove && (task.status === 'en_evaluacion' || task.status === 'pendiente_aprobacion_comite') && !showRejectForm && (
           <Button size="sm" variant="outline" onClick={() => setShowRejectForm(true)} className="gap-1.5 text-xs h-8 border-red-200 text-red-600 hover:bg-red-50">
             <ThumbsDown className="h-3.5 w-3.5" /> Rechazar / pedir nuevos
           </Button>

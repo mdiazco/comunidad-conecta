@@ -20,6 +20,7 @@ import { isSuperAdmin, canObserveTask, canStartFinishTask } from '@/lib/permissi
 import TaskFormDialog from '@/components/tasks/TaskFormDialog';
 import BudgetPanel from '@/components/budgets/BudgetPanel';
 import CommitteeVotingPanel from '@/components/budgets/CommitteeVotingPanel';
+import ApprovalFlowPanel from '@/components/budgets/ApprovalFlowPanel';
 import { cn } from '@/lib/utils';
 
 const STATUS_MAP = {
@@ -167,9 +168,13 @@ export default function TaskDetail() {
   const isCommitteeMemberOfTask = myMemberships.some(
     m => m.community_id === task?.community_id && m.role === 'comite' && m.status === 'active'
   );
+  const showApprovalFlow = task.task_type === 'reparacion' && task.requires_budget &&
+    ['en_evaluacion', 'pendiente_aprobacion_comite', 'en_votacion_comite', 'aprobado_comite',
+     'rechazado_comite', 'pendiente_aprobacion_admin', 'aprobado_final', 'rechazado_final'].includes(task.status);
+
   const showCommitteePanel = task.task_type === 'reparacion' && task.requires_budget &&
     (isAdmin || isCommitteeMemberOfTask) &&
-    ['en_evaluacion', 'en_votacion_comite', 'aprobado_comite', 'rechazado_comite',
+    ['pendiente_aprobacion_comite', 'en_votacion_comite', 'aprobado_comite', 'rechazado_comite',
      'pendiente_aprobacion_admin', 'aprobado_final', 'rechazado_final'].includes(task.status);
 
   return (
@@ -385,6 +390,11 @@ export default function TaskDetail() {
 
       <ScoreDialog open={scoreOpen} onOpenChange={setScoreOpen} task={task} user={user} />
       <TaskFormDialog open={editOpen} onOpenChange={setEditOpen} task={task} />
+
+      {/* ── Approval Flow (visual stepper) ── */}
+      {showApprovalFlow && (
+        <ApprovalFlowPanel task={task} />
+      )}
 
       {/* ── Budget Panel (for reparacion tasks) ── */}
       {task.task_type === 'reparacion' && task.requires_budget && (
