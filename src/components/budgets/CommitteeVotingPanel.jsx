@@ -130,6 +130,7 @@ export default function CommitteeVotingPanel({ task, user, communityConfig, onVo
       const selectedBudget = budgets.find(b => b.is_selected) || suggestedBudget;
       if (!selectedBudget) throw new Error('No hay presupuesto seleccionado');
 
+      // Mark budget as approved
       await base44.entities.Budget.update(selectedBudget.id, {
         is_approved: true,
         approved_by: user.email,
@@ -137,8 +138,9 @@ export default function CommitteeVotingPanel({ task, user, communityConfig, onVo
         approved_at: now,
       });
 
+      // Approve task and transition to "asignada" (order of work generated — ready for execution)
       await base44.entities.Task.update(task.id, {
-        status: 'aprobado_final',
+        status: 'asignada',
         approved_by: user.email,
         approved_by_name: user.full_name || user.email,
         approved_at: now,
@@ -146,13 +148,15 @@ export default function CommitteeVotingPanel({ task, user, communityConfig, onVo
         selected_budget_supplier: selectedBudget.supplier_name,
         selected_budget_amount: selectedBudget.amount,
         work_order_generated: true,
+        supplier_id: selectedBudget.supplier_id || task.supplier_id || '',
+        supplier_name: selectedBudget.supplier_name,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['task', task.id] });
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       queryClient.invalidateQueries({ queryKey: ['budgets', task.id] });
-      toast.success('Presupuesto aprobado — tarea lista para ejecución');
+      toast.success('✅ Presupuesto aprobado — Orden de trabajo generada. Tarea lista para ejecución.');
     },
   });
 
@@ -184,7 +188,7 @@ export default function CommitteeVotingPanel({ task, user, communityConfig, onVo
   const isPreVoting = task.status === 'pendiente_aprobacion_comite';
   const isVotingOpen = task.status === 'en_votacion_comite';
   const isAdminApprovalPending = task.status === 'pendiente_aprobacion_admin';
-  const isFinalApproved = task.status === 'aprobado_final';
+  const isFinalApproved = ['asignada', 'en_ejecucion', 'finalizada'].includes(task.status) && task.work_order_generated;
 
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
@@ -451,16 +455,26 @@ export default function CommitteeVotingPanel({ task, user, communityConfig, onVo
         </div>
       )}
 
-      {/* Final approved */}
+      {/* Final approved — work order generated */}
       {isFinalApproved && (
-        <div className="mx-4 mb-4 flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-          <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-          <div>
-            <p className="text-sm font-semibold text-emerald-700">Aprobado definitivamente</p>
-            <p className="text-xs text-emerald-600">
-              Por {task.approved_by_name} · {task.approved_at ? format(new Date(task.approved_at), "d MMM yyyy", { locale: es }) : ''}
-            </p>
+        <div className="mx-4 mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+            <p className="text-sm font-semibold text-emerald-700">✅ Presupuesto aprobado — Orden de trabajo generada</p>
           </div>
+          {task.selected_budget_supplier && (
+            <p className="text-xs text-emerald-700 font-medium">
+              Proveedor: <strong>{task.selected_budget_supplier}</strong>
+              {task.selected_budget_amount ? ` · ${formatCLP(task.selected_budget_amount)}` : ''}
+            </p>
+          )}
+          <p className="text-xs text-emerald-600">
+            Aprobado por {task.approved_by_name}
+            {task.approved_at ? ` · ${format(new Date(task.approved_at), "d 'de' MMMM yyyy", { locale: es })}` : ''}
+          </p>
+          <p className="text-xs text-emerald-600 italic">
+            La tarea ha sido asignada al proveedor y está lista para iniciar ejecución.
+          </p>
         </div>
       )}
 

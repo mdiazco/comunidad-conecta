@@ -175,8 +175,11 @@ export default function TaskDetail() {
 
   const showCommitteePanel = task.task_type === 'reparacion' && task.requires_budget &&
     (isAdmin || isCommitteeMemberOfTask) &&
-    ['pendiente_aprobacion_comite', 'en_votacion_comite', 'aprobado_comite', 'rechazado_comite',
-     'pendiente_aprobacion_admin', 'aprobado_final', 'rechazado_final'].includes(task.status);
+    (
+      ['pendiente_aprobacion_comite', 'en_votacion_comite', 'aprobado_comite', 'rechazado_comite',
+       'pendiente_aprobacion_admin', 'aprobado_final', 'rechazado_final'].includes(task.status) ||
+      (task.work_order_generated && ['asignada', 'en_ejecucion', 'finalizada'].includes(task.status))
+    );
 
   return (
     <div className="space-y-5 max-w-4xl animate-in fade-in duration-300">
