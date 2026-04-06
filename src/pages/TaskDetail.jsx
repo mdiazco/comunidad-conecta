@@ -21,6 +21,7 @@ import TaskFormDialog from '@/components/tasks/TaskFormDialog';
 import BudgetPanel from '@/components/budgets/BudgetPanel';
 import CommitteeVotingPanel from '@/components/budgets/CommitteeVotingPanel';
 import ApprovalFlowPanel from '@/components/budgets/ApprovalFlowPanel';
+import TaskPDFExport from '@/components/tasks/TaskPDFExport';
 import { cn } from '@/lib/utils';
 
 const STATUS_MAP = {
@@ -207,11 +208,14 @@ export default function TaskDetail() {
                 </span>
               )}
             </div>
-            {(isAdmin || canModifyStatus) && (
-              <Button variant="outline" size="sm" className="gap-1.5 shrink-0" onClick={() => setEditOpen(true)}>
-                <Pencil className="h-3.5 w-3.5" /> Editar
-              </Button>
-            )}
+            <div className="flex items-center gap-2 shrink-0">
+              <TaskPDFExport task={task} />
+              {(isAdmin || canModifyStatus) && (
+                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setEditOpen(true)}>
+                  <Pencil className="h-3.5 w-3.5" /> Editar
+                </Button>
+              )}
+            </div>
           </div>
           <h1 className="text-2xl font-bold text-foreground mt-2">{task.title}</h1>
           {task.community_name && (
