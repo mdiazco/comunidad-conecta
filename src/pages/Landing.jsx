@@ -55,9 +55,8 @@ export default function Landing() {
       {/* HEADER */}
       <header className="fixed top-0 left-0 right-0 z-50" style={{ background: 'rgba(240,244,255,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #E0E8FF' }}>
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Building2 className="w-5 h-5" style={{ color: '#0055FF' }} />
-            <span className="font-bold text-base" style={{ color: '#0A0A2E' }}>Comunidad Conecta</span>
+          <div className="flex items-center">
+            <img src="https://media.base44.com/images/public/69be92d9b179f726fbced205/cf2a70525_lgcomunidad.png" alt="Comunidad Conecta" className="h-10 w-auto object-contain" />
           </div>
           <button
             onClick={handleLogin}
@@ -238,9 +237,8 @@ export default function Landing() {
             />
           </div>
           <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <Building2 className="w-4 h-4" style={{ color: '#0055FF' }} />
-              <span className="font-bold text-base" style={{ color: '#0A0A2E' }}>Comunidad Conecta 2.0</span>
+            <div className="flex items-center justify-center mb-2">
+              <img src="https://media.base44.com/images/public/69be92d9b179f726fbced205/cf2a70525_lgcomunidad.png" alt="Comunidad Conecta" className="h-14 w-auto object-contain" />
             </div>
             <p className="text-sm" style={{ color: '#6B7280' }}>Plataforma de gestión residencial · {new Date().getFullYear()}</p>
           </div>
