@@ -1,0 +1,67 @@
+{
+  "name": "ProviderScore",
+  "type": "object",
+  "properties": {
+    "provider_id": {
+      "type": "string",
+      "description": "ID del proveedor"
+    },
+    "provider_name": {
+      "type": "string",
+      "description": "Nombre del proveedor (cach\u00e9)"
+    },
+    "task_id": {
+      "type": "string",
+      "description": "ID de la tarea asociada"
+    },
+    "task_title": {
+      "type": "string",
+      "description": "T\u00edtulo de la tarea (cach\u00e9)"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "ID de la comunidad"
+    },
+    "punctuality": {
+      "type": "number",
+      "description": "Puntualidad (1-5)"
+    },
+    "quality": {
+      "type": "number",
+      "description": "Calidad del trabajo (1-5)"
+    },
+    "checklist_compliance": {
+      "type": "number",
+      "description": "Cumplimiento del checklist (1-5)"
+    },
+    "observations_score": {
+      "type": "number",
+      "description": "Manejo de observaciones (1-5, donde 5=sin problemas)"
+    },
+    "final_score": {
+      "type": "number",
+      "description": "Score final promedio (1-5)"
+    },
+    "comment": {
+      "type": "string",
+      "description": "Comentario de la evaluaci\u00f3n"
+    },
+    "evaluated_by": {
+      "type": "string",
+      "description": "Email de quien evalu\u00f3"
+    },
+    "evaluated_by_name": {
+      "type": "string",
+      "description": "Nombre de quien evalu\u00f3"
+    }
+  },
+  "required": [
+    "provider_id",
+    "task_id",
+    "community_id",
+    "punctuality",
+    "quality",
+    "checklist_compliance",
+    "observations_score"
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email del destinatario"
+    },
+    "title": {
+      "type": "string",
+      "description": "T\u00edtulo de la notificaci\u00f3n"
+    },
+    "message": {
+      "type": "string",
+      "description": "Mensaje"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "task_assigned",
+        "task_observed",
+        "task_due_soon",
+        "general"
+      ],
+      "description": "Tipo de notificaci\u00f3n"
+    },
+    "read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si fue le\u00edda"
+    },
+    "link": {
+      "type": "string",
+      "description": "URL de referencia"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "ID de la comunidad relacionada"
+    }
+  },
+  "required": [
+    "user_email",
+    "title",
+    "message",
+    "type"
+  ]
+}

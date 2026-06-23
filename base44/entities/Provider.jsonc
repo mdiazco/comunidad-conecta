@@ -1,0 +1,72 @@
+{
+  "name": "Provider",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre del proveedor"
+    },
+    "service_type": {
+      "type": "string",
+      "enum": [
+        "ascensores",
+        "gas",
+        "aseo",
+        "electricidad",
+        "plomeria",
+        "jardineria",
+        "seguridad",
+        "climatizacion",
+        "pintura",
+        "otro"
+      ],
+      "description": "Tipo de servicio"
+    },
+    "contact_name": {
+      "type": "string",
+      "description": "Nombre del contacto"
+    },
+    "contact_email": {
+      "type": "string",
+      "description": "Email de contacto"
+    },
+    "contact_phone": {
+      "type": "string",
+      "description": "Tel\u00e9fono de contacto"
+    },
+    "rut": {
+      "type": "string",
+      "description": "RUT del proveedor"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "ID de la comunidad asociada"
+    },
+    "community_name": {
+      "type": "string",
+      "description": "Nombre de la comunidad (cach\u00e9)"
+    },
+    "avg_score": {
+      "type": "number",
+      "description": "Score promedio (1-5)"
+    },
+    "total_evaluations": {
+      "type": "number",
+      "default": 0,
+      "description": "Total de evaluaciones recibidas"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "name",
+    "service_type",
+    "community_id"
+  ]
+}

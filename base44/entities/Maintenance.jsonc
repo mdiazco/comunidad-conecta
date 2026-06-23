@@ -1,0 +1,149 @@
+{
+  "name": "Maintenance",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre de la mantenci\u00f3n"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n detallada"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "preventiva",
+        "correctiva"
+      ],
+      "description": "Tipo de mantenci\u00f3n"
+    },
+    "system_type": {
+      "type": "string",
+      "enum": [
+        "ascensores",
+        "tableros_electricos",
+        "estanque_agua",
+        "red_agua",
+        "alcantarillado",
+        "extintores",
+        "alarma_incendio",
+        "red_humeda_seca",
+        "generador",
+        "iluminacion_emergencia",
+        "cctv",
+        "citofonia",
+        "basura",
+        "otro"
+      ],
+      "description": "Sistema t\u00e9cnico al que pertenece"
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "mensual",
+        "trimestral",
+        "semestral",
+        "anual",
+        "personalizada"
+      ],
+      "description": "Frecuencia de ejecuci\u00f3n"
+    },
+    "frequency_days": {
+      "type": "number",
+      "description": "D\u00edas personalizados (si frecuencia = personalizada)"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de inicio"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de fin (31/12 del a\u00f1o en curso)"
+    },
+    "next_execution": {
+      "type": "string",
+      "format": "date",
+      "description": "Pr\u00f3xima ejecuci\u00f3n"
+    },
+    "year": {
+      "type": "number",
+      "description": "A\u00f1o de vigencia"
+    },
+    "assigned_to": {
+      "type": "string",
+      "description": "Email del responsable"
+    },
+    "assigned_to_name": {
+      "type": "string",
+      "description": "Nombre del responsable"
+    },
+    "provider_id": {
+      "type": "string",
+      "description": "ID del proveedor asignado"
+    },
+    "provider_name": {
+      "type": "string",
+      "description": "Nombre del proveedor (cach\u00e9)"
+    },
+    "contract_id": {
+      "type": "string",
+      "description": "ID del contrato asociado"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Si la mantenci\u00f3n est\u00e1 activa"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "activa",
+        "cerrada_fin_a\u00f1o",
+        "suspendida"
+      ],
+      "default": "activa",
+      "description": "Estado de la mantenci\u00f3n"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "ID de la comunidad"
+    },
+    "community_name": {
+      "type": "string",
+      "description": "Nombre de la comunidad (cach\u00e9)"
+    },
+    "last_execution": {
+      "type": "string",
+      "format": "date",
+      "description": "\u00daltima ejecuci\u00f3n registrada"
+    },
+    "checklist_items": {
+      "type": "array",
+      "description": "Pasos del checklist de la mantenci\u00f3n",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "frequency",
+    "start_date",
+    "community_id"
+  ]
+}

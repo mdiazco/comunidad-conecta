@@ -1,0 +1,23 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "superadmin",
+        "admin",
+        "user"
+      ],
+      "default": "user",
+      "description": "Rol global en la plataforma"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Tel\u00e9fono de contacto"
+    }
+  },
+  "required": [
+    "phone"
+  ]
+}

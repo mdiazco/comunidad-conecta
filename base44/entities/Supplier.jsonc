@@ -1,0 +1,68 @@
+{
+  "name": "Supplier",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre del proveedor"
+    },
+    "giro": {
+      "type": "string",
+      "description": "Giro o rubro"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email de contacto"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Tel\u00e9fono"
+    },
+    "rut": {
+      "type": "string",
+      "description": "RUT del proveedor"
+    },
+    "razon_social": {
+      "type": "string",
+      "description": "Raz\u00f3n social"
+    },
+    "bank_name": {
+      "type": "string",
+      "description": "Nombre del banco"
+    },
+    "account_type": {
+      "type": "string",
+      "enum": [
+        "Cuenta Corriente",
+        "Cuenta Vista",
+        "Cuenta de Ahorro",
+        "Chequera Electr\u00f3nica"
+      ],
+      "description": "Tipo de cuenta bancaria"
+    },
+    "bank_rut": {
+      "type": "string",
+      "description": "RUT para datos bancarios"
+    },
+    "account_number": {
+      "type": "string",
+      "description": "N\u00famero de cuenta bancaria"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active",
+      "description": "Estado del proveedor"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "ID de la comunidad asociada"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

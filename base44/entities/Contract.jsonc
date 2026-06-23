@@ -1,0 +1,100 @@
+{
+  "name": "Contract",
+  "type": "object",
+  "properties": {
+    "community_id": {
+      "type": "string",
+      "description": "ID de la comunidad"
+    },
+    "community_name": {
+      "type": "string",
+      "description": "Nombre de la comunidad (cach\u00e9)"
+    },
+    "provider_id": {
+      "type": "string",
+      "description": "ID del proveedor"
+    },
+    "provider_name": {
+      "type": "string",
+      "description": "Nombre del proveedor (cach\u00e9)"
+    },
+    "service_description": {
+      "type": "string",
+      "description": "Descripci\u00f3n del servicio contratado"
+    },
+    "service_type": {
+      "type": "string",
+      "enum": [
+        "ascensores",
+        "gas",
+        "aseo",
+        "electricidad",
+        "plomeria",
+        "jardineria",
+        "seguridad",
+        "climatizacion",
+        "pintura",
+        "otro"
+      ],
+      "description": "Tipo de servicio"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de inicio del contrato"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de t\u00e9rmino del contrato"
+    },
+    "monthly_cost": {
+      "type": "number",
+      "description": "Costo mensual (CLP)"
+    },
+    "annual_cost": {
+      "type": "number",
+      "description": "Costo anual (CLP)"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "CLP",
+        "UF",
+        "USD"
+      ],
+      "default": "CLP",
+      "description": "Moneda"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "activo",
+        "vencido",
+        "suspendido",
+        "por_renovar"
+      ],
+      "default": "activo",
+      "description": "Estado del contrato"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL del documento de contrato"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas adicionales"
+    },
+    "year": {
+      "type": "number",
+      "description": "A\u00f1o del contrato"
+    }
+  },
+  "required": [
+    "community_id",
+    "provider_id",
+    "service_type",
+    "start_date",
+    "end_date"
+  ]
+}

@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
   Plus, Search, ClipboardList, CheckCircle2, AlertTriangle,
-  Clock, PlayCircle, Eye, Filter, X, ArrowRight, Pencil, Trash2
+  Clock, PlayCircle, Eye, Filter, X, ArrowRight, Pencil, Trash2,
+  LayoutList, Kanban
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import TaskFormDialog from '@/components/tasks/TaskFormDialog';
+import TaskKanban from '@/components/tasks/TaskKanban';
 import { isSuperAdmin } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 import PermissionGate from '@/components/rbac/PermissionGate';
@@ -65,6 +67,7 @@ export default function Tasks() {
   const [activeTab, setActiveTab] = useState('all');
   const [formOpen, setFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [viewMode, setViewMode] = useState('list'); // 'list' | 'kanban'
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Task.delete(id),
@@ -150,11 +153,36 @@ export default function Tasks() {
                 : 'Gestiona reparaciones, mantenciones y tareas administrativas'}
             </p>
           </div>
-          {canCreate && (
-            <Button onClick={() => setFormOpen(true)} className="gap-2 shadow-sm shrink-0">
-              <Plus className="h-4 w-4" /> Nueva Tarea
-            </Button>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* View mode toggle */}
+            <div className="flex items-center bg-muted rounded-lg p-1 gap-0.5">
+              <button
+                onClick={() => setViewMode('list')}
+                className={cn(
+                  "p-1.5 rounded-md transition-colors",
+                  viewMode === 'list' ? "bg-card shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
+                )}
+                title="Vista lista"
+              >
+                <LayoutList className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('kanban')}
+                className={cn(
+                  "p-1.5 rounded-md transition-colors",
+                  viewMode === 'kanban' ? "bg-card shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
+                )}
+                title="Vista Kanban"
+              >
+                <Kanban className="h-4 w-4" />
+              </button>
+            </div>
+            {canCreate && (
+              <Button onClick={() => setFormOpen(true)} className="gap-2 shadow-sm">
+                <Plus className="h-4 w-4" /> Nueva Tarea
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* ── Stat tabs ── */}
@@ -289,8 +317,13 @@ export default function Tasks() {
           )}
         </div>
 
+        {/* ── Kanban view ── */}
+        {viewMode === 'kanban' && !isLoading && (
+          <TaskKanban tasks={filtered} />
+        )}
+
         {/* ── Task list ── */}
-        {isLoading ? (
+        {viewMode === 'list' && (isLoading ? (
           <div className="bg-card border border-border rounded-2xl overflow-hidden">
             {[1, 2, 3, 4, 5].map(i => (
               <div key={i} className="flex items-center gap-4 px-5 py-4 border-b border-border last:border-0 animate-pulse">
@@ -486,7 +519,7 @@ export default function Tasks() {
               )}
             </div>
           </div>
-        )}
+        ))}
 
         <TaskFormDialog
           open={formOpen}

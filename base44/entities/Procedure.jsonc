@@ -1,0 +1,72 @@
+{
+  "name": "Procedure",
+  "type": "object",
+  "properties": {
+    "community_id": {
+      "type": "string",
+      "description": "ID de la comunidad"
+    },
+    "name": {
+      "type": "string",
+      "description": "Nombre del procedimiento"
+    },
+    "procedure_type": {
+      "type": "string",
+      "enum": [
+        "documento",
+        "flujo"
+      ],
+      "description": "Tipo: documento de referencia o flujo de tareas"
+    },
+    "classification": {
+      "type": "string",
+      "enum": [
+        "administrativo",
+        "mantenimiento",
+        "seguridad",
+        "emergencia"
+      ],
+      "description": "Clasificaci\u00f3n funcional"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n del procedimiento"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL del documento PDF (si es tipo documento)"
+    },
+    "flow_steps": {
+      "type": "array",
+      "description": "Pasos del flujo (si es tipo flujo)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "step_number": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "community_id",
+    "name",
+    "procedure_type",
+    "classification"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "name": "Evidence",
+  "type": "object",
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "description": "ID de la tarea asociada"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "ID de la comunidad"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL del archivo subido"
+    },
+    "file_name": {
+      "type": "string",
+      "description": "Nombre del archivo"
+    },
+    "file_type": {
+      "type": "string",
+      "enum": [
+        "jpg",
+        "png",
+        "pdf"
+      ],
+      "description": "Tipo de archivo"
+    },
+    "version": {
+      "type": "number",
+      "description": "N\u00famero de versi\u00f3n"
+    },
+    "comment": {
+      "type": "string",
+      "description": "Comentario o nota"
+    },
+    "uploaded_by_name": {
+      "type": "string",
+      "description": "Nombre de quien subi\u00f3"
+    }
+  },
+  "required": [
+    "task_id",
+    "community_id",
+    "file_url",
+    "file_name"
+  ]
+}
