@@ -56,7 +56,7 @@ export default function Landing() {
       <header className="fixed top-0 left-0 right-0 z-50" style={{ background: 'rgba(240,244,255,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #E0E8FF' }}>
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center">
-            <img src="https://media.base44.com/images/public/69be92d9b179f726fbced205/cf2a70525_lgcomunidad.png" alt="Comunidad Conecta" className="h-10 w-auto object-contain" />
+            <img src="https://media.base44.com/images/public/69be92d9b179f726fbced205/cf2a70525_lgcomunidad.png" alt="Comunidad Conecta" className="h-16 w-auto object-contain" />
           </div>
           <button
             onClick={handleLogin}
