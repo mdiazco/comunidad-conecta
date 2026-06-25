@@ -58,6 +58,16 @@ export default function Landing() {
           <div className="flex items-center">
             <img src="https://media.base44.com/images/public/69be92d9b179f726fbced205/cf2a70525_lgcomunidad.png" alt="Comunidad Conecta" className="h-16 w-auto object-contain" />
           </div>
+
+          {/* Nav links */}
+          <nav className="hidden md:flex items-center gap-7">
+            <a href="#inicio" className="text-sm font-semibold tracking-wide uppercase transition-colors hover:text-blue-600" style={{ color: '#0A0A2E' }}>Inicio</a>
+            <a href="#features" className="text-sm font-semibold tracking-wide uppercase transition-colors hover:text-blue-600" style={{ color: '#0A0A2E' }}>Funcionalidades</a>
+            <a href="#como-funciona" className="text-sm font-semibold tracking-wide uppercase transition-colors hover:text-blue-600" style={{ color: '#0A0A2E' }}>¿Cómo Funciona?</a>
+            <a href="#comunidad" className="text-sm font-semibold tracking-wide uppercase transition-colors hover:text-blue-600" style={{ color: '#0A0A2E' }}>Comunidad</a>
+            <a href="#contacto" className="text-sm font-semibold tracking-wide uppercase transition-colors hover:text-blue-600" style={{ color: '#0A0A2E' }}>Contacto</a>
+          </nav>
+
           <button
             onClick={handleLogin}
             className="font-bold px-5 py-2 rounded-full text-sm text-white transition-all"
@@ -69,7 +79,7 @@ export default function Landing() {
       </header>
 
       {/* ── HERO ── */}
-      <section className="pt-20 pb-0 overflow-hidden" style={{ background: '#F0F4FF' }}>
+      <section id="inicio" className="pt-20 pb-0 overflow-hidden" style={{ background: '#F0F4FF' }}>
         <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-8 items-center min-h-[480px]">
           {/* Left text */}
           <div className="py-16">
@@ -160,7 +170,7 @@ export default function Landing() {
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section className="py-20 px-6 relative overflow-hidden" style={{ background: '#F0F4FF' }}>
+      <section id="como-funciona" className="py-20 px-6 relative overflow-hidden" style={{ background: '#F0F4FF' }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="font-bold text-4xl mb-3" style={{ color: '#0A0A2E' }}>¿Cómo funciona?</h2>
