@@ -6,6 +6,7 @@ import { useCurrentUser } from '@/lib/useCurrentUser';
 import { base44 } from '@/api/base44Client';
 import { useRBAC } from '@/lib/useRBAC';
 import ImpersonationBanner from '@/components/rbac/ImpersonationBanner';
+import AdminOnlyAccess from '@/components/AdminOnlyAccess';
 
 export default function AppLayout() {
   const { user, loading } = useCurrentUser();
@@ -28,6 +29,11 @@ export default function AppLayout() {
         <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
       </div>
     );
+  }
+
+  // Solo usuarios con rol de plataforma "admin" pueden acceder al panel.
+  if (user?.role !== 'admin') {
+    return <AdminOnlyAccess userName={user?.full_name || user?.email} />;
   }
 
   return (

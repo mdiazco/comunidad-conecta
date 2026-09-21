@@ -43,6 +43,7 @@
         "en_votacion_comite",
         "aprobado_comite",
         "rechazado_comite",
+        "sin_quorum",
         "pendiente_aprobacion_admin",
         "aprobado_final",
         "rechazado_final",
@@ -209,17 +210,50 @@
     "committee_votes_approve": {
       "type": "number",
       "default": 0,
-      "description": "Total votos aprobatorios del comit\u00e9"
+      "description": "Total votos aprobatorios del comit\u00e9 (ronda actual)"
     },
     "committee_votes_reject": {
       "type": "number",
       "default": 0,
-      "description": "Total votos de rechazo del comit\u00e9"
+      "description": "Total votos de rechazo del comit\u00e9 (ronda actual)"
     },
     "work_order_generated": {
       "type": "boolean",
       "default": false,
       "description": "Si se gener\u00f3 la orden de trabajo"
+    },
+    "current_voting_round": {
+      "type": "number",
+      "default": 0,
+      "description": "N\u00famero de ronda de votaci\u00f3n del comit\u00e9 en curso (0 = no iniciada)"
+    },
+    "voting_deadline": {
+      "type": "string",
+      "description": "Fecha y hora l\u00edmite de la votaci\u00f3n en curso (ISO)"
+    },
+    "voting_closed_reason": {
+      "type": "string",
+      "description": "Motivo de cierre manual por admin (sin qu\u00f3rum, empate, m\u00e1x. rondas, etc.)"
+    },
+    "voting_closed_by": {
+      "type": "string",
+      "description": "Email del admin que cerr\u00f3 la votaci\u00f3n manualmente"
+    },
+    "voting_closed_at": {
+      "type": "string",
+      "description": "Fecha y hora del cierre manual de votaci\u00f3n (ISO)"
+    },
+    "budget_exception_reason": {
+      "type": "string",
+      "description": "Motivo autorizado por el admin para requerir menos de 3 cotizaciones"
+    },
+    "budget_exception_by": {
+      "type": "string",
+      "description": "Email del admin que autoriz\u00f3 la excepci\u00f3n de presupuestos"
+    },
+    "budget_exception_at": {
+      "type": "string",
+      "description": "Fecha y hora de la autorizaci\u00f3n de excepci\u00f3n (ISO)"
     }
   },
   "required": [

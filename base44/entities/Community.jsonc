@@ -72,6 +72,26 @@
       "type": "boolean",
       "default": true,
       "description": "Si el administrador puede vetar la decisi\u00f3n del comit\u00e9"
+    },
+    "amount_threshold": {
+      "type": "number",
+      "default": 0,
+      "description": "Monto en CLP sobre el cual el flujo de presupuestos es obligatorio aunque requires_budget sea false. 0 = desactivado"
+    },
+    "voting_deadline_days": {
+      "type": "number",
+      "default": 7,
+      "description": "D\u00edas de plazo por defecto para cada ronda de votaci\u00f3n del comit\u00e9"
+    },
+    "allow_admin_committee_double_role": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si se permite que un admin que vot\u00f3 como comit\u00e9 tambi\u00e9n d\u00e9 la aprobaci\u00f3n final (comunidades peque\u00f1as). Se registra en AuditLog."
+    },
+    "max_voting_rounds": {
+      "type": "number",
+      "default": 3,
+      "description": "M\u00e1ximo de rondas de votaci\u00f3n antes de que el admin deba decidir manualmente"
     }
   },
   "required": [

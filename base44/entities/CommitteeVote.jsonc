@@ -37,6 +37,11 @@
     "voted_at": {
       "type": "string",
       "description": "Fecha y hora del voto (ISO)"
+    },
+    "round": {
+      "type": "number",
+      "default": 1,
+      "description": "N\u00famero de ronda de votaci\u00f3n a la que pertenece este voto"
     }
   },
   "required": [
