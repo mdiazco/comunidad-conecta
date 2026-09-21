@@ -17,6 +17,7 @@ const COLUMNS = [
   { key: 'pendiente_aprobacion_admin', label: 'Pend. Admin',         color: 'bg-amber-500',   light: 'bg-amber-50 border-amber-200',    text: 'text-amber-700' },
   { key: 'asignada',                   label: 'Aprobada / Asignada', color: 'bg-emerald-500', light: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700' },
   { key: 'rechazado_comite',           label: 'Rechazado Comité',    color: 'bg-red-400',     light: 'bg-red-50 border-red-200',        text: 'text-red-700' },
+  { key: 'sin_quorum',                 label: 'Sin quórum',          color: 'bg-orange-500',  light: 'bg-orange-50 border-orange-200',  text: 'text-orange-700' },
 ];
 
 // Allowed transitions when dragging (to prevent invalid moves)

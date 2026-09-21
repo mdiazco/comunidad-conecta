@@ -26,11 +26,12 @@ const STATUS_CONFIG = {
   pendiente_aprobacion_admin: { label: 'Pend. aprobación',      class: 'bg-amber-50 text-amber-700 border-amber-200',       dot: 'bg-amber-500',   stage: 4 },
   aprobado_final:             { label: 'Aprobado Final',        class: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500', stage: 5 },
   rechazado_final:            { label: 'Rechazado Final',       class: 'bg-red-50 text-red-700 border-red-200',             dot: 'bg-red-500',     stage: -1 },
+  sin_quorum:                 { label: 'Sin quórum',            class: 'bg-orange-50 text-orange-700 border-orange-200',     dot: 'bg-orange-500',  stage: 3 },
 };
 
 const BUDGET_FLOW_STATUSES = [
   'pendiente_presupuestos', 'en_evaluacion', 'en_votacion_comite',
-  'aprobado_comite', 'rechazado_comite', 'pendiente_aprobacion_admin',
+  'aprobado_comite', 'rechazado_comite', 'sin_quorum', 'pendiente_aprobacion_admin',
   'aprobado_final', 'rechazado_final',
 ];
 

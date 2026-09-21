@@ -26,7 +26,7 @@ const STEPS = [
     label: 'Votación Comité',
     sublabel: 'Miembros votan el presupuesto',
     icon: Users,
-    activeStatuses: ['pendiente_aprobacion_comite', 'en_votacion_comite'],
+    activeStatuses: ['pendiente_aprobacion_comite', 'en_votacion_comite', 'sin_quorum'],
     doneStatuses: ['aprobado_comite', 'pendiente_aprobacion_admin', 'aprobado_final'],
     rejectedStatuses: ['rechazado_comite'],
   },
