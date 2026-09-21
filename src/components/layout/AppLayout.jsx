@@ -32,7 +32,9 @@ export default function AppLayout() {
   }
 
   // Solo usuarios con rol de plataforma "admin" pueden acceder al panel.
-  if (user?.role !== 'admin') {
+  // TEMPORAL-BYPASS — eliminar tras pruebas Fase 5 (usuario de prueba no-admin)
+  const TEMP_BYPASS_EMAIL = 'manuel@vertex365.cl';
+  if (user?.role !== 'admin' && user?.email?.toLowerCase() !== TEMP_BYPASS_EMAIL) {
     return <AdminOnlyAccess userName={user?.full_name || user?.email} />;
   }
 
