@@ -30,7 +30,7 @@
           "with": {
             "function_name": "checkVotingDeadlines",
             "args": {
-              "token": "cc_wf_deadline_8f3Kq2NvX7"
+              "token": "__REPLACE_WITH_WORKFLOW_DEADLINE_TOKEN_SECRET__"
             }
           },
           "then": "end",
@@ -42,6 +42,6 @@
       }
     ]
   },
-  "description": "Cada d\u00eda a las 09:00 (America/Santiago) revisa las votaciones de comit\u00e9 con plazo vencido y las resuelve seg\u00fan el resultado (aprobado/rechazado/sin_quorum), notificando al administrador de la comunidad. Se autentica con un token exclusivo del workflow.",
+  "description": "Cada d\u00eda a las 09:00 (America/Santiago) revisa las votaciones de comit\u00e9 con plazo vencido y las resuelve seg\u00fan el resultado (aprobado/rechazado/sin_quorum), notificando al administrador de la comunidad. Se autentica con el token exclusivo del workflow (secret WORKFLOW_DEADLINE_TOKEN). IMPORTANTE: reemplaza __REPLACE_WITH_WORKFLOW_DEADLINE_TOKEN_SECRET__ en args.token por el valor del secret WORKFLOW_DEADLINE_TOKEN (la plataforma no permite referenciar secrets desde el workflow).",
   "name": "Chequeo diario de plazos de votaci\u00f3n"
 }

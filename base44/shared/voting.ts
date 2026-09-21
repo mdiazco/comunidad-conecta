@@ -1,10 +1,10 @@
 // Helpers compartidos del flujo de aprobación de presupuestos.
 // Importados por las backend functions de votación/aprobación.
 
-// Shared secret para autorizar la invocación desde el workflow programado
-// (la plataforma no expone una credencial exclusiva para workflows: invoke_backend_function
-// solo pasa args, sin identidad de usuario). Ambos extremos son backend (no llegan al cliente).
-export const WORKFLOW_DEADLINE_TOKEN = 'cc_wf_deadline_8f3Kq2NvX7';
+// El shared secret para autorizar el workflow programado se almacena como secret de plataforma
+// (WORKFLOW_DEADLINE_TOKEN) y se lee en checkVotingDeadlines vía `secrets.get(...)`.
+// La plataforma no permite referenciar secrets desde el archivo del workflow (sus args son
+// literales estáticos en el repo), por lo que el valor debe ir en `args.token` del workflow.
 
 export function isPlatformAdmin(user) {
   return user?.role === 'admin';

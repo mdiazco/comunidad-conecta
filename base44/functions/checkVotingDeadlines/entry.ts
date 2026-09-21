@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
+import { secrets } from 'base44:runtime';
 import {
-  isPlatformAdmin, writeAudit, notifyUser, evaluateTaskVoting, WORKFLOW_DEADLINE_TOKEN,
+  isPlatformAdmin, writeAudit, notifyUser, evaluateTaskVoting,
 } from '../../shared/voting.ts';
 
 // Cierra votaciones con plazo vencido.
@@ -18,8 +19,9 @@ export default async function(req) {
       actor = user;
     } else {
       const body = await req.json().catch(() => ({}));
-      if (body?.token !== WORKFLOW_DEADLINE_TOKEN) {
-        return Response.json({ error: 'No autorizado: se requiere el token del workflow' }, { status: 401 });
+      const expectedToken = secrets.get('WORKFLOW_DEADLINE_TOKEN');
+      if (!expectedToken || body?.token !== expectedToken) {
+        return Response.json({ error: 'No autorizado: token del workflow inválido o ausente' }, { status: 401 });
       }
       actor = { email: 'system@workflow', full_name: 'Workflow programado', role: 'admin' };
     }
