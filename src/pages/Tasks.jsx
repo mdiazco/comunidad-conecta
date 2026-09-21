@@ -15,6 +15,7 @@ import { es } from 'date-fns/locale';
 import TaskFormDialog from '@/components/tasks/TaskFormDialog';
 import TaskKanban from '@/components/tasks/TaskKanban';
 import { isSuperAdmin } from '@/lib/permissions';
+import { getMyTasks } from '@/lib/votingApi';
 import { cn } from '@/lib/utils';
 import PermissionGate from '@/components/rbac/PermissionGate';
 
@@ -77,7 +78,9 @@ export default function Tasks() {
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['tasks'],
-    queryFn: () => base44.entities.Task.list('-created_date', 200),
+    queryFn: () => isAdmin
+      ? base44.entities.Task.list('-created_date', 200)
+      : getMyTasks().then(r => r.tasks || []),
   });
 
   const { data: myMemberships = [] } = useQuery({

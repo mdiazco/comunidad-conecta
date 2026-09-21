@@ -1,6 +1,11 @@
 // Helpers compartidos del flujo de aprobación de presupuestos.
 // Importados por las backend functions de votación/aprobación.
 
+// Shared secret para autorizar la invocación desde el workflow programado
+// (la plataforma no expone una credencial exclusiva para workflows: invoke_backend_function
+// solo pasa args, sin identidad de usuario). Ambos extremos son backend (no llegan al cliente).
+export const WORKFLOW_DEADLINE_TOKEN = 'cc_wf_deadline_8f3Kq2NvX7';
+
 export function isPlatformAdmin(user) {
   return user?.role === 'admin';
 }
@@ -43,26 +48,53 @@ export async function getCommitteeMembers(base44, communityId) {
   });
 }
 
-// Calcula el resultado de la votación.
-// approve/reject = votos válidos (de miembros activos del comité) en la ronda actual.
-// totalMembers = número de miembros activos del comité.
+// Calcula el resultado de la votación con la regla de cierre de Fase 4b:
+// - approve/reject = votos válidos (de miembros activos del comité) en la ronda actual.
+// - totalMembers = miembros activos del comité.
+// - minMet = se alcanzó min_committee_votes.
+// - allVoted = ya votaron todos los miembros activos.
+// - locked = el resultado no puede cambiar con los votos que faltan.
+// - canCloseNow = minMet && (allVoted || locked) && outcome en (approved|rejected).
+//   Tie y pending NUNCA se cierran solos (permanecen abiertos hasta el plazo).
 export function computeResult(approve, reject, totalMembers, config) {
   const totalVotes = approve + reject;
   const minVotes = config.min_committee_votes;
-  if (minVotes > totalMembers && totalVotes === totalMembers) {
-    // min_committee_votes imposible de satisfacer
-    return { outcome: 'pending', reason: 'min_votes_exceeds_members' };
-  }
-  if (totalVotes < minVotes) return { outcome: 'pending', reason: 'insufficient_votes' };
+  const remaining = Math.max(0, totalMembers - totalVotes);
+  const allVoted = totalMembers > 0 && totalVotes >= totalMembers;
+  const minMet = totalVotes >= minVotes;
+
+  let outcome;
   if (config.approval_mode === 'unanimity') {
-    if (reject > 0) return { outcome: 'rejected', reason: 'unanimity_broken' };
-    if (approve === totalMembers) return { outcome: 'approved', reason: 'unanimous' };
-    return { outcome: 'pending', reason: 'unanimity_incomplete' };
+    if (reject > 0) outcome = 'rejected';
+    else if (totalMembers > 0 && approve === totalMembers) outcome = 'approved';
+    else outcome = 'pending';
+  } else {
+    if (approve > reject) outcome = 'approved';
+    else if (reject > approve) outcome = 'rejected';
+    else outcome = 'tie'; // approve === reject (incl. 0-0)
   }
-  // mayoría simple
-  if (approve > reject) return { outcome: 'approved', reason: 'majority' };
-  if (reject > approve) return { outcome: 'rejected', reason: 'majority' };
-  return { outcome: 'tie', reason: 'tie' };
+
+  // ¿El resultado puede cambiar con los votos restantes?
+  let locked = false;
+  if (outcome === 'approved') {
+    if (approve > reject + remaining) locked = true;
+  } else if (outcome === 'rejected') {
+    if (reject > approve + remaining) locked = true;
+  }
+  if (config.approval_mode === 'unanimity' && outcome === 'rejected') locked = true; // unanimidad rota: irrecuperable
+  if (config.approval_mode === 'unanimity' && outcome === 'approved') locked = allVoted; // aprobado solo si todos votaron
+
+  const canCloseNow = minMet && (allVoted || locked) && (outcome === 'approved' || outcome === 'rejected');
+
+  let reason;
+  if (minVotes > totalMembers && totalMembers > 0) reason = 'min_votes_exceeds_members';
+  else if (!minMet) reason = 'insufficient_votes';
+  else if (outcome === 'tie') reason = 'tie';
+  else if (outcome === 'approved') reason = config.approval_mode === 'unanimity' ? 'unanimous' : 'majority';
+  else if (outcome === 'rejected') reason = config.approval_mode === 'unanimity' ? 'unanimity_broken' : 'majority';
+  else reason = 'pending';
+
+  return { outcome, reason, totalVotes, remaining, allVoted, minMet, locked, canCloseNow };
 }
 
 // Cuenta solo los votos de la ronda actual emitidos por miembros activos del comité.
@@ -75,6 +107,18 @@ export function countValidVotes(roundVotes, committeeEmails) {
     else if (v.vote === 'reject') reject++;
   }
   return { approve, reject };
+}
+
+// Evalúa la votación en curso de una tarea: miembros, votos válidos, config y resultado.
+export async function evaluateTaskVoting(base44, task) {
+  const round = task.current_voting_round || 1;
+  const members = await getCommitteeMembers(base44, task.community_id);
+  const committeeEmails = members.map(m => m.user_email);
+  const roundVotes = await base44.asServiceRole.entities.CommitteeVote.filter({ task_id: task.id, round });
+  const { approve, reject } = countValidVotes(roundVotes, committeeEmails);
+  const config = await getCommunityConfig(base44, task.community_id);
+  const result = computeResult(approve, reject, members.length, config);
+  return { round, members, committeeEmails, approve, reject, config, result };
 }
 
 export async function writeAudit(base44, { entity_type, entity_id, action, user, details, community_id }) {

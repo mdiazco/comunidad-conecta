@@ -17,6 +17,7 @@ import EvidenceList from '@/components/evidence/EvidenceList';
 import ChecklistPanel from '@/components/tasks/ChecklistPanel';
 import ScoreDialog from '@/components/providers/ScoreDialog';
 import { isSuperAdmin, canObserveTask, canStartFinishTask } from '@/lib/permissions';
+import { getMyTasks } from '@/lib/votingApi';
 import TaskFormDialog from '@/components/tasks/TaskFormDialog';
 import BudgetPanel from '@/components/budgets/BudgetPanel';
 import CommitteeVotingPanel from '@/components/budgets/CommitteeVotingPanel';
@@ -73,8 +74,12 @@ export default function TaskDetail() {
   const { data: task, isLoading } = useQuery({
     queryKey: ['task', taskId],
     queryFn: async () => {
-      const list = await base44.entities.Task.filter({ id: taskId });
-      return list[0];
+      if (isSuperAdmin(user)) {
+        const list = await base44.entities.Task.filter({ id: taskId });
+        return list[0];
+      }
+      const r = await getMyTasks();
+      return (r.tasks || []).find(t => t.id === taskId);
     },
     enabled: !!taskId,
   });

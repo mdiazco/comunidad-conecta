@@ -1,7 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import {
-  canManageCommunity, getCommunityConfig, getCommitteeMembers,
-  computeResult, countValidVotes, writeAudit, notifyUser,
+  canManageCommunity, evaluateTaskVoting, writeAudit, notifyUser,
 } from '../../shared/voting.ts';
 
 export default async function(req) {
@@ -25,20 +24,14 @@ export default async function(req) {
       return Response.json({ error: `La tarea no está en votación (estado actual: "${task.status}")` }, { status: 409 });
     }
 
-    const round = task.current_voting_round || 1;
-    const members = await getCommitteeMembers(base44, task.community_id);
-    const committeeEmails = members.map(m => m.user_email);
-    const roundVotes = await base44.asServiceRole.entities.CommitteeVote.filter({ task_id: taskId, round });
-    const { approve, reject } = countValidVotes(roundVotes, committeeEmails);
-
-    const config = await getCommunityConfig(base44, task.community_id);
-    const result = computeResult(approve, reject, members.length, config);
+    const { round, approve, reject, result } = await evaluateTaskVoting(base44, task);
     const now = new Date().toISOString();
 
+    // Cierre manual con la misma regla: solo transiciona si hay resultado decidido (approved/rejected)
+    // y se alcanzó el mínimo de votos. Tie o sin quórum → no se cierra; el admin usa decisión manual.
     let transitionedTo = null;
     let message = '';
-
-    if (result.outcome === 'approved') {
+    if (result.minMet && result.outcome === 'approved') {
       const g = await base44.asServiceRole.entities.Task.updateMany(
         { id: taskId, status: 'en_votacion_comite' },
         { $set: { status: 'pendiente_aprobacion_admin', committee_votes_approve: approve, committee_votes_reject: reject, committee_approved_at: now } }
@@ -50,7 +43,7 @@ export default async function(req) {
       } else {
         return Response.json({ ok: true, idempotent: true, message: 'La votación ya fue cerrada' });
       }
-    } else if (result.outcome === 'rejected') {
+    } else if (result.minMet && result.outcome === 'rejected') {
       const g = await base44.asServiceRole.entities.Task.updateMany(
         { id: taskId, status: 'en_votacion_comite' },
         { $set: { status: 'rechazado_comite', committee_votes_approve: approve, committee_votes_reject: reject, committee_rejection_reason: 'Rechazado por el comité' } }
@@ -61,14 +54,13 @@ export default async function(req) {
         return Response.json({ ok: true, idempotent: true, message: 'La votación ya fue cerrada' });
       }
     } else {
-      // tie o pending (sin quórum): no se transiciona automáticamente
       await base44.asServiceRole.entities.Task.updateMany(
         { id: taskId },
         { $set: { committee_votes_approve: approve, committee_votes_reject: reject } }
       );
       message = result.outcome === 'tie'
-        ? 'Empate: la votación no aprueba. Permanece abierta hasta el plazo; luego usa la decisión manual.'
-        : 'Sin quórum suficiente: la votación permanece abierta. Usa la decisión manual o espera al plazo.';
+        ? 'Empate: la votación no aprueba. Permanece abierta; usa la decisión manual (extender/nueva ronda/rechazar).'
+        : 'Sin quórum suficiente. La votación permanece abierta; usa la decisión manual o espera al plazo.';
     }
 
     const _au = await writeAudit(base44, {

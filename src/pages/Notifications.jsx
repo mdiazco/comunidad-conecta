@@ -2,7 +2,7 @@ import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { markNotificationRead } from '@/lib/votingApi';
+import { markNotificationRead, markAllNotificationsRead } from '@/lib/votingApi';
 import { Bell, Check, CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -33,10 +33,8 @@ export default function Notifications() {
   });
 
   const markAllReadMutation = useMutation({
-    mutationFn: async () => {
-      const unread = notifications.filter(n => !n.read);
-      await Promise.all(unread.map(n => base44.entities.Notification.update(n.id, { read: true })));
-    },
+    mutationFn: () => markAllNotificationsRead(),
+    onError: (e) => console.error(e.message),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
   });
 

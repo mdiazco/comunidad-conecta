@@ -11,7 +11,7 @@ import {
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { castVote, finalApproval, adminVeto } from '@/lib/votingApi';
+import { castVote, finalApproval, adminVeto, getCommitteeVotingTasks, getCommitteeMembersFn, getBudgets } from '@/lib/votingApi';
 
 function formatCLP(n) {
   return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n);
@@ -29,40 +29,63 @@ export default function CommitteeVotingPanel({ task, user, communityConfig, onVo
   const minVotes = communityConfig?.min_committee_votes || 1;
   const adminCanVeto = communityConfig?.admin_can_veto !== false;
 
-  // Fetch votes for this task
-  const { data: votes = [] } = useQuery({
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+
+  // Admin de plataforma: lee por SDK. No-admin (comité/administrador): usa funciones sanitizadas
+  // (contadores desde el objeto task; miembros y presupuestos desde getCommitteeMembers/getBudgets;
+  // mi propio voto desde getCommitteeVotingTasks). No se exponen votos ajenos.
+  const { data: votesDirect = [] } = useQuery({
     queryKey: ['committee-votes', task.id],
     queryFn: () => base44.entities.CommitteeVote.filter({ task_id: task.id }),
-    enabled: !!task.id,
+    enabled: !!task.id && isAdmin,
   });
-
-  // Fetch committee members
-  const { data: members = [] } = useQuery({
+  const { data: membersDirect = [] } = useQuery({
     queryKey: ['community-members', task.community_id],
     queryFn: () => base44.entities.CommunityMember.filter({ community_id: task.community_id, status: 'active' }),
-    enabled: !!task.community_id,
+    enabled: !!task.community_id && isAdmin,
   });
-
-  // Fetch suggested budget
-  const { data: budgets = [] } = useQuery({
+  const { data: budgetsDirect = [] } = useQuery({
     queryKey: ['budgets', task.id],
     queryFn: () => base44.entities.Budget.filter({ task_id: task.id }),
-    enabled: !!task.id,
+    enabled: !!task.id && isAdmin,
   });
+  const { data: membersFn } = useQuery({
+    queryKey: ['committee-members-fn', task.community_id],
+    queryFn: () => getCommitteeMembersFn(task.community_id),
+    enabled: !!task.community_id && !isAdmin,
+  });
+  const { data: budgetsFn = [] } = useQuery({
+    queryKey: ['budgets-fn', task.id],
+    queryFn: () => getBudgets(task.id).then(r => r.budgets || []),
+    enabled: !!task.id && !isAdmin,
+  });
+  const { data: envelopeFn } = useQuery({
+    queryKey: ['committee-voting-tasks'],
+    queryFn: () => getCommitteeVotingTasks(),
+    enabled: !!task.id && !isAdmin,
+  });
+
+  const votes = isAdmin ? votesDirect : [];
+  const members = isAdmin
+    ? membersDirect
+    : (membersFn?.members || []).map(m => ({ user_email: m.email, user_name: m.name, role: 'comite' }));
+  const budgets = isAdmin ? budgetsDirect : budgetsFn;
+  const myEnvelope = !isAdmin ? (envelopeFn?.tasks || []).find(t => t.id === task.id) : null;
 
   const committeeMembers = members.filter(m => m.role === 'comite');
   const suggestedBudget = budgets.find(b => b.id === task.committee_suggested_budget_id);
 
-  const approveCount = votes.filter(v => v.vote === 'approve').length;
-  const rejectCount = votes.filter(v => v.vote === 'reject').length;
-  const totalVotes = votes.length;
+  const approveCount = isAdmin ? votes.filter(v => v.vote === 'approve').length : (task.committee_votes_approve ?? 0);
+  const rejectCount = isAdmin ? votes.filter(v => v.vote === 'reject').length : (task.committee_votes_reject ?? 0);
+  const totalVotes = isAdmin ? votes.length : (approveCount + rejectCount);
   const totalMembers = committeeMembers.length || 1;
   const approvalPct = totalVotes > 0 ? Math.round((approveCount / totalVotes) * 100) : 0;
   const participationPct = Math.round((totalVotes / totalMembers) * 100);
 
-  const myVote = votes.find(v => v.voter_email === user?.email);
-  const isCommitteeMember = committeeMembers.some(m => m.user_email === user?.email);
-  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+  const myVote = isAdmin
+    ? votes.find(v => v.voter_email === user?.email)
+    : (myEnvelope?.my_vote ? { vote: myEnvelope.my_vote.vote, comment: myEnvelope.my_vote.comment, voted_at: myEnvelope.my_vote.voted_at } : null);
+  const isCommitteeMember = committeeMembers.some(m => (m.user_email || '').toLowerCase() === (user?.email || '').toLowerCase());
 
   const hasEnoughVotes = totalVotes >= minVotes;
   const isApproved = approvalMode === 'unanimity'
@@ -219,7 +242,8 @@ export default function CommitteeVotingPanel({ task, user, communityConfig, onVo
             </div>
           </div>
 
-          {/* Member vote list */}
+          {/* Member vote list — solo admin (no expone votos ajenos a no-admin) */}
+          {isAdmin && (
           <div className="space-y-1.5">
             {committeeMembers.map(member => {
               const memberVote = votes.find(v => v.voter_email === member.user_email);
@@ -262,6 +286,7 @@ export default function CommitteeVotingPanel({ task, user, communityConfig, onVo
               );
             })}
           </div>
+          )}
         </div>
       )}
 

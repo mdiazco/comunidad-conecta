@@ -27,6 +27,15 @@ export default async function(req) {
     }
 
     const config = await getCommunityConfig(base44, task.community_id);
+
+    // Validación: min_committee_votes no puede superar los miembros activos del comité.
+    const members = await getCommitteeMembers(base44, task.community_id);
+    if (config.min_committee_votes > members.length) {
+      return Response.json({
+        error: `No se puede abrir la votación: min_committee_votes (${config.min_committee_votes}) es mayor que los miembros activos del comité (${members.length}). Ajusta la configuración de la comunidad o agrega miembros de comité.`,
+      }, { status: 400 });
+    }
+
     const budgets = await base44.asServiceRole.entities.Budget.filter({ task_id: taskId });
     if (budgets.length < 3 && !task.budget_exception_reason) {
       return Response.json({ error: `Se requieren mínimo 3 presupuestos (o autorizar una excepción con motivo). Actualmente: ${budgets.length}` }, { status: 400 });
@@ -40,7 +49,6 @@ export default async function(req) {
     const now = new Date().toISOString();
     const deadline = addDays(config.voting_deadline_days);
 
-    // Guarda atómica: solo avanza si sigue en pendiente_aprobacion_comite
     const guard = await base44.asServiceRole.entities.Task.updateMany(
       { id: taskId, status: 'pendiente_aprobacion_comite' },
       {
@@ -63,7 +71,6 @@ export default async function(req) {
       return Response.json({ error: 'La tarea ya no estaba pendiente de envío (modificada simultáneamente)' }, { status: 409 });
     }
 
-    // Marcar presupuesto sugerido como seleccionado
     if (suggestedBudgetId) {
       await base44.asServiceRole.entities.Budget.updateMany(
         { task_id: taskId, is_selected: true },
@@ -72,8 +79,6 @@ export default async function(req) {
       await base44.asServiceRole.entities.Budget.update(suggestedBudgetId, { is_selected: true });
     }
 
-    // Notificar a miembros del comité
-    const members = await getCommitteeMembers(base44, task.community_id);
     await Promise.all(members.map(m =>
       notifyUser(base44, m.user_email, 'Nueva votación pendiente',
         `Se requiere tu voto para la tarea "${task.title}" (ronda ${newRound}). Plazo: ${deadline}.`,

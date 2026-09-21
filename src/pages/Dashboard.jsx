@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Building2, Users, Sparkles, Wrench } from 'lucide-react';
 import { isSuperAdmin } from '@/lib/permissions';
+import { getMyTasks } from '@/lib/votingApi';
 import { cn } from '@/lib/utils';
 import TaskSemaphore from '@/components/dashboard/TaskSemaphore';
 import MaintenanceSemaphore from '@/components/dashboard/MaintenanceSemaphore';
@@ -72,7 +73,9 @@ export default function Dashboard() {
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['tasks'],
-    queryFn: () => base44.entities.Task.list('-created_date'),
+    queryFn: () => isAdmin
+      ? base44.entities.Task.list('-created_date')
+      : getMyTasks().then(r => r.tasks || []),
   });
 
   const { data: maintenances = [] } = useQuery({

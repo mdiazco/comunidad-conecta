@@ -28,17 +28,20 @@
         "check": {
           "call": "invoke_backend_function",
           "with": {
-            "function_name": "checkVotingDeadlines"
+            "function_name": "checkVotingDeadlines",
+            "args": {
+              "token": "cc_wf_deadline_8f3Kq2NvX7"
+            }
           },
           "then": "end",
           "x-base44": {
             "title": "Chequear plazos vencidos",
-            "description": "Votaciones vencidas \u2192 sin_quorum"
+            "description": "Votaciones vencidas \u2192 sin_quorum / aprobado / rechazado"
           }
         }
       }
     ]
   },
-  "description": "Cada d\u00eda a las 09:00 (America/Santiago) revisa las votaciones de comit\u00e9 con plazo vencido y las mueve a sin_quorum, notificando al administrador de la comunidad para que decida (extender, nueva ronda o rechazar).",
+  "description": "Cada d\u00eda a las 09:00 (America/Santiago) revisa las votaciones de comit\u00e9 con plazo vencido y las resuelve seg\u00fan el resultado (aprobado/rechazado/sin_quorum), notificando al administrador de la comunidad. Se autentica con un token exclusivo del workflow.",
   "name": "Chequeo diario de plazos de votaci\u00f3n"
 }

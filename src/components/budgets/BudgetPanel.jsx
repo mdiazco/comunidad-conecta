@@ -13,6 +13,7 @@ import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import BudgetFormDialog from './BudgetFormDialog';
 import SendToCommitteeDialog from './SendToCommitteeDialog';
+import { getBudgets, advanceToEvaluation, selectBudget, giveVoBo, rejectBudget } from '@/lib/votingApi';
 
 const MIN_BUDGETS = 3;
 
@@ -34,9 +35,12 @@ export default function BudgetPanel({ task, canApprove, user }) {
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectForm, setShowRejectForm] = useState(false);
 
+  const isPlatformAdmin = user?.role === 'admin' || user?.role === 'superadmin';
   const { data: budgets = [], isLoading } = useQuery({
     queryKey: ['budgets', task.id],
-    queryFn: () => base44.entities.Budget.filter({ task_id: task.id }),
+    queryFn: () => isPlatformAdmin
+      ? base44.entities.Budget.filter({ task_id: task.id })
+      : getBudgets(task.id).then(r => r.budgets || []),
     enabled: !!task.id,
   });
 
@@ -76,38 +80,73 @@ export default function BudgetPanel({ task, canApprove, user }) {
 
   const handleSelectBudget = async (budget) => {
     if (!canApprove || isLocked) return;
-    await Promise.all(
-      budgets.filter(b => b.id !== budget.id && b.is_selected)
-        .map(b => base44.entities.Budget.update(b.id, { is_selected: false }))
-    );
-    await base44.entities.Budget.update(budget.id, { is_selected: true });
+    if (isPlatformAdmin) {
+      await Promise.all(
+        budgets.filter(b => b.id !== budget.id && b.is_selected)
+          .map(b => base44.entities.Budget.update(b.id, { is_selected: false }))
+      );
+      await base44.entities.Budget.update(budget.id, { is_selected: true });
+    } else {
+      await selectBudget(task.id, budget.id);
+    }
     queryClient.invalidateQueries({ queryKey: ['budgets', task.id] });
+    queryClient.invalidateQueries({ queryKey: ['task', task.id] });
   };
 
   const handleAdvanceToEvaluation = () => {
-    taskMutation.mutate({ status: 'en_evaluacion' });
-    toast.success('Tarea avanzada a evaluación');
+    if (isPlatformAdmin) {
+      taskMutation.mutate({ status: 'en_evaluacion' });
+      toast.success('Tarea avanzada a evaluación');
+    } else {
+      advanceToEvaluation(task.id)
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: ['task', task.id] });
+          queryClient.invalidateQueries({ queryKey: ['tasks'] });
+          toast.success('Tarea avanzada a evaluación');
+        })
+        .catch(e => toast.error(e.message));
+    }
   };
 
   const handleGiveVoBo = () => {
-    taskMutation.mutate({
-      status: 'pendiente_aprobacion_comite',
-      committee_suggested_budget_id: selectedBudget?.id,
-    });
-    toast.success('Visto Bueno otorgado — listo para enviar al Comité');
+    if (isPlatformAdmin) {
+      taskMutation.mutate({
+        status: 'pendiente_aprobacion_comite',
+        committee_suggested_budget_id: selectedBudget?.id,
+      });
+      toast.success('Visto Bueno otorgado — listo para enviar al Comité');
+    } else {
+      giveVoBo(task.id)
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: ['task', task.id] });
+          queryClient.invalidateQueries({ queryKey: ['tasks'] });
+          toast.success('Visto Bueno otorgado — listo para enviar al Comité');
+        })
+        .catch(e => toast.error(e.message));
+    }
   };
 
   const handleReject = () => {
     if (!rejectionReason.trim()) { toast.error('Escribe el motivo de rechazo'); return; }
-    Promise.all(budgets.filter(b => b.is_selected).map(b =>
-      base44.entities.Budget.update(b.id, { is_selected: false, is_approved: false })
-    )).then(() => queryClient.invalidateQueries({ queryKey: ['budgets', task.id] }));
-    taskMutation.mutate({
-      status: 'en_evaluacion',
-      rejection_reason: rejectionReason,
-      selected_budget_id: '',
-      committee_suggested_budget_id: '',
-    });
+    if (isPlatformAdmin) {
+      Promise.all(budgets.filter(b => b.is_selected).map(b =>
+        base44.entities.Budget.update(b.id, { is_selected: false, is_approved: false })
+      )).then(() => queryClient.invalidateQueries({ queryKey: ['budgets', task.id] }));
+      taskMutation.mutate({
+        status: 'en_evaluacion',
+        rejection_reason: rejectionReason,
+        selected_budget_id: '',
+        committee_suggested_budget_id: '',
+      });
+    } else {
+      rejectBudget(task.id, rejectionReason)
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: ['task', task.id] });
+          queryClient.invalidateQueries({ queryKey: ['budgets', task.id] });
+          queryClient.invalidateQueries({ queryKey: ['tasks'] });
+        })
+        .catch(e => toast.error(e.message));
+    }
     setRejectionReason('');
     setShowRejectForm(false);
     toast.info('Tarea vuelta a evaluación');
