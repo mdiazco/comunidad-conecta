@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Users, Trophy, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { openVoting } from '@/lib/votingApi';
 
 function formatCLP(n) {
   return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n);
@@ -20,40 +21,8 @@ export default function SendToCommitteeDialog({ open, onOpenChange, task, budget
   const sorted = [...budgets].sort((a, b) => a.amount - b.amount);
 
   const mutation = useMutation({
-    mutationFn: async () => {
-      const now = new Date().toISOString();
-
-      // Notify each committee member (create notifications)
-      const notifPromises = committeeMembers.map(member =>
-        base44.entities.Notification.create({
-          user_email: member.user_email,
-          title: 'Nueva votación pendiente',
-          message: `Se requiere tu voto para la tarea "${task.title}". Accede a la tarea para votar.`,
-          type: 'task_assigned',
-          community_id: task.community_id,
-          link: `/tasks/${task.id}`,
-          read: false,
-        })
-      );
-      await Promise.all(notifPromises);
-
-      // If a budget was selected as suggestion, mark it
-      if (suggestedBudgetId) {
-        // Deselect all first, then select suggestion
-        await Promise.all(budgets.map(b =>
-          base44.entities.Budget.update(b.id, { is_selected: b.id === suggestedBudgetId })
-        ));
-      }
-
-      await base44.entities.Task.update(task.id, {
-        status: 'en_votacion_comite',
-        committee_sent_at: now,
-        committee_sent_by: user.email,
-        committee_suggested_budget_id: suggestedBudgetId || undefined,
-        committee_votes_approve: 0,
-        committee_votes_reject: 0,
-      });
-    },
+    mutationFn: async () => openVoting(task.id, suggestedBudgetId || null),
+    onError: (e) => toast.error(e.message || 'Error'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['task', task.id] });
       queryClient.invalidateQueries({ queryKey: ['tasks'] });

@@ -71,13 +71,13 @@ export default async function(req) {
         : 'Sin quórum suficiente: la votación permanece abierta. Usa la decisión manual o espera al plazo.';
     }
 
-    await writeAudit(base44, {
+    const _au = await writeAudit(base44, {
       entity_type: 'Task', entity_id: taskId, action: 'status_change', user,
       details: `Cierre de votación ronda ${round}: ${approve} approve / ${reject} reject → ${transitionedTo || result.outcome}`,
       community_id: task.community_id,
     });
 
-    return Response.json({ ok: true, approve, reject, result: result.outcome, transitionedTo, message });
+    return Response.json({ ok: true, approve, reject, result: result.outcome, transitionedTo, message, auditWarning: _au.ok ? undefined : _au.error });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

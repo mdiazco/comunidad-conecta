@@ -1,0 +1,44 @@
+{
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 9 * * *",
+      "one_time_date": null,
+      "timezone": "America/Santiago",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "daily_voting_deadline_check",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "check": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "checkVotingDeadlines"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Chequear plazos vencidos",
+            "description": "Votaciones vencidas \u2192 sin_quorum"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Cada d\u00eda a las 09:00 (America/Santiago) revisa las votaciones de comit\u00e9 con plazo vencido y las mueve a sin_quorum, notificando al administrador de la comunidad para que decida (extender, nueva ronda o rechazar).",
+  "name": "Chequeo diario de plazos de votaci\u00f3n"
+}

@@ -11,6 +11,7 @@ import {
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { castVote, finalApproval, adminVeto } from '@/lib/votingApi';
 
 function formatCLP(n) {
   return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n);
@@ -75,44 +76,8 @@ export default function CommitteeVotingPanel({ task, user, communityConfig, onVo
   const pendingMembers = committeeMembers.filter(m => !votedEmails.has(m.user_email));
 
   const voteMutation = useMutation({
-    mutationFn: async ({ voteType }) => {
-      const now = new Date().toISOString();
-      await base44.entities.CommitteeVote.create({
-        task_id: task.id,
-        community_id: task.community_id,
-        voter_email: user.email,
-        voter_name: user.full_name || user.email,
-        vote: voteType,
-        comment: comment.trim() || undefined,
-        budget_id: task.committee_suggested_budget_id || undefined,
-        voted_at: now,
-      });
-
-      // Recalculate and check thresholds
-      const updatedVotes = await base44.entities.CommitteeVote.filter({ task_id: task.id });
-      const newApprove = updatedVotes.filter(v => v.vote === 'approve').length;
-      const newReject = updatedVotes.filter(v => v.vote === 'reject').length;
-      const newTotal = updatedVotes.length;
-
-      const newApproved = approvalMode === 'unanimity'
-        ? newApprove === totalMembers && newTotal >= minVotes
-        : newApprove > newReject && newTotal >= minVotes;
-      const newRejected = approvalMode === 'unanimity'
-        ? newReject > 0 && newTotal >= minVotes
-        : newReject >= newApprove && newTotal >= minVotes && newApprove === 0;
-
-      let newStatus = 'en_votacion_comite';
-      if (newApproved) newStatus = 'aprobado_comite';
-      else if (newRejected) newStatus = 'rechazado_comite';
-
-      await base44.entities.Task.update(task.id, {
-        status: newStatus,
-        committee_votes_approve: newApprove,
-        committee_votes_reject: newReject,
-        ...(newApproved ? { committee_approved_at: now, status: 'pendiente_aprobacion_admin' } : {}),
-        ...(newRejected ? { committee_rejection_reason: comment || 'Rechazado por el comité' } : {}),
-      });
-    },
+    mutationFn: async ({ voteType }) => castVote(task.id, voteType, comment.trim() || undefined),
+    onError: (e) => toast.error(e.message || 'Error'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['committee-votes', task.id] });
       queryClient.invalidateQueries({ queryKey: ['task', task.id] });
@@ -125,33 +90,8 @@ export default function CommitteeVotingPanel({ task, user, communityConfig, onVo
   });
 
   const adminApproveMutation = useMutation({
-    mutationFn: async () => {
-      const now = new Date().toISOString();
-      const selectedBudget = budgets.find(b => b.is_selected) || suggestedBudget;
-      if (!selectedBudget) throw new Error('No hay presupuesto seleccionado');
-
-      // Mark budget as approved
-      await base44.entities.Budget.update(selectedBudget.id, {
-        is_approved: true,
-        approved_by: user.email,
-        approved_by_name: user.full_name || user.email,
-        approved_at: now,
-      });
-
-      // Approve task and transition to "asignada" (order of work generated — ready for execution)
-      await base44.entities.Task.update(task.id, {
-        status: 'asignada',
-        approved_by: user.email,
-        approved_by_name: user.full_name || user.email,
-        approved_at: now,
-        selected_budget_id: selectedBudget.id,
-        selected_budget_supplier: selectedBudget.supplier_name,
-        selected_budget_amount: selectedBudget.amount,
-        work_order_generated: true,
-        supplier_id: selectedBudget.supplier_id || task.supplier_id || '',
-        supplier_name: selectedBudget.supplier_name,
-      });
-    },
+    mutationFn: async () => finalApproval(task.id),
+    onError: (e) => toast.error(e.message || 'Error'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['task', task.id] });
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
@@ -162,19 +102,10 @@ export default function CommitteeVotingPanel({ task, user, communityConfig, onVo
 
   const adminRejectMutation = useMutation({
     mutationFn: async () => {
-      if (!adminRejectReason.trim()) throw new Error('Escribe el motivo de rechazo');
-      const budgetsToReset = budgets.filter(b => b.is_selected);
-      await Promise.all(budgetsToReset.map(b =>
-        base44.entities.Budget.update(b.id, { is_selected: false, is_approved: false })
-      ));
-      await base44.entities.Task.update(task.id, {
-        status: 'en_evaluacion',
-        rejection_reason: adminRejectReason,
-        selected_budget_id: '',
-        committee_votes_approve: 0,
-        committee_votes_reject: 0,
-      });
+      if (!adminRejectReason.trim()) throw new Error('Escribe el motivo de veto');
+      return adminVeto(task.id, adminRejectReason.trim());
     },
+    onError: (e) => toast.error(e.message || 'Error'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['task', task.id] });
       queryClient.invalidateQueries({ queryKey: ['tasks'] });

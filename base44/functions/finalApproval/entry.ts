@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import {
-  canManageCommunity, getCommunityConfig, writeAudit, notifyUser,
+  canManageCommunity, getCommunityConfig, getCommitteeMembers, countValidVotes, computeResult, writeAudit, notifyUser,
 } from '../../shared/voting.ts';
 
 export default async function(req) {
@@ -31,6 +31,7 @@ export default async function(req) {
     }
 
     const now = new Date().toISOString();
+    let auditWarning;
 
     // IDEMPOTENCIA + REPARABILIDAD: si la orden ya está generada
     if (task.work_order_generated) {
@@ -42,18 +43,29 @@ export default async function(req) {
           approved_by_name: user.full_name || user.email,
           approved_at: task.approved_at || now,
         });
-        await writeAudit(base44, {
+        const _auRepair = await writeAudit(base44, {
           entity_type: 'Budget', entity_id: selectedBudget.id, action: 'update', user,
           details: `Reparación: marcado is_approved=true (orden ya estaba generada)`,
           community_id: task.community_id,
         });
-        return Response.json({ ok: true, repaired: true, message: 'Orden ya estaba generada; se completó is_approved faltante.' });
+        if (!_auRepair.ok) auditWarning = _auRepair.error;
+        return Response.json({ ok: true, repaired: true, message: 'Orden ya estaba generada; se completó is_approved faltante.', auditWarning });
       }
       return Response.json({ ok: true, alreadyApproved: true, message: 'La orden de trabajo ya estaba generada.' });
     }
 
     if (task.status !== 'pendiente_aprobacion_admin') {
       return Response.json({ error: `Etapa incorrecta: la tarea está en "${task.status}", no en "pendiente_aprobacion_admin"` }, { status: 409 });
+    }
+
+    // Verificar que el comité aprobó en la ronda actual (votos válidos recomputados)
+    const committeeMembers = await getCommitteeMembers(base44, task.community_id);
+    const committeeEmails = committeeMembers.map(m => m.user_email);
+    const roundVotes = await base44.asServiceRole.entities.CommitteeVote.filter({ task_id: taskId, round: task.current_voting_round || 1 });
+    const { approve: cApprove, reject: cReject } = countValidVotes(roundVotes, committeeEmails);
+    const committeeResult = computeResult(cApprove, cReject, committeeMembers.length, config);
+    if (committeeResult.outcome !== 'approved') {
+      return Response.json({ error: `El comité no aprobó el presupuesto en la ronda actual. Resultado recomputado: "${committeeResult.outcome}" (${committeeResult.reason}). Votos válidos: ${cApprove} approve / ${cReject} reject sobre ${committeeMembers.length} miembros activos del comité. No se puede dar la aprobación final.` }, { status: 409 });
     }
 
     const selectedBudget = await getSelectedBudget(base44, task);
@@ -92,23 +104,25 @@ export default async function(req) {
       approved_at: now,
     });
 
-    await writeAudit(base44, {
+    const _au1 = await writeAudit(base44, {
       entity_type: 'Task', entity_id: taskId, action: 'status_change', user,
       details: `pendiente_aprobacion_admin → asignada (orden de trabajo generada, presupuesto ${selectedBudget.supplier_name} ${selectedBudget.amount})`,
       community_id: task.community_id,
     });
-    await writeAudit(base44, {
+    if (!_au1.ok) auditWarning = _au1.error;
+    const _au2 = await writeAudit(base44, {
       entity_type: 'Budget', entity_id: selectedBudget.id, action: 'update', user,
       details: `Presupuesto aprobado definitivamente (tarea ${task.title})`,
       community_id: task.community_id,
     });
+    if (!_au2.ok) auditWarning = _au2.error;
 
     await notifyUser(base44, task.assigned_to || task.committee_sent_by || '',
       'Orden de trabajo generada',
       `La reparación "${task.title}" fue aprobada y asignada a ${selectedBudget.supplier_name}.`,
       'task_assigned', task.community_id, `/tasks/${taskId}`);
 
-    return Response.json({ ok: true, workOrderGenerated: true, supplier: selectedBudget.supplier_name, amount: selectedBudget.amount });
+    return Response.json({ ok: true, workOrderGenerated: true, supplier: selectedBudget.supplier_name, amount: selectedBudget.amount, auditWarning });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

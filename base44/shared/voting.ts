@@ -83,13 +83,15 @@ export async function writeAudit(base44, { entity_type, entity_id, action, user,
       entity_type,
       entity_id,
       action,
-      user_email: user.email,
-      user_name: user.full_name || user.email,
+      user_email: user?.email || 'system',
+      user_name: user?.full_name || user?.email || 'system',
       details,
       community_id,
     });
-  } catch (_e) {
-    // la auditoría no debe bloquear la operación
+    return { ok: true };
+  } catch (e) {
+    console.error(`[AUDIT FAIL] ${entity_type}/${entity_id} ${action}:`, e?.message || String(e));
+    return { ok: false, error: e?.message || String(e) };
   }
 }
 

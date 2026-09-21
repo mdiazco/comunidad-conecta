@@ -2,6 +2,7 @@ import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { markNotificationRead } from '@/lib/votingApi';
 import { Bell, Check, CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -27,7 +28,7 @@ export default function Notifications() {
   });
 
   const markReadMutation = useMutation({
-    mutationFn: (id) => base44.entities.Notification.update(id, { read: true }),
+    mutationFn: (id) => markNotificationRead(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
   });
 

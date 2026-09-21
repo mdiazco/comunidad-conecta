@@ -57,7 +57,7 @@ export default async function(req) {
       { $set: { is_selected: false, is_approved: false } }
     );
 
-    await writeAudit(base44, {
+    const _au = await writeAudit(base44, {
       entity_type: 'Task', entity_id: taskId, action: 'status_change', user,
       details: `Veto del admin: pendiente_aprobacion_admin → en_evaluacion. Motivo: ${reason}`,
       community_id: task.community_id,
@@ -71,7 +71,7 @@ export default async function(req) {
         'general', task.community_id, `/tasks/${taskId}`)
     ));
 
-    return Response.json({ ok: true, revertedTo: 'en_evaluacion', notified: members.length });
+    return Response.json({ ok: true, revertedTo: 'en_evaluacion', notified: members.length, auditWarning: _au.ok ? undefined : _au.error });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

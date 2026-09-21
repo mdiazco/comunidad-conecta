@@ -80,13 +80,13 @@ export default async function(req) {
         'task_assigned', task.community_id, `/tasks/${taskId}`)
     ));
 
-    await writeAudit(base44, {
+    const _au = await writeAudit(base44, {
       entity_type: 'Task', entity_id: taskId, action: 'status_change', user,
       details: `pendiente_aprobacion_comite → en_votacion_comite (ronda ${newRound}, plazo ${deadline})`,
       community_id: task.community_id,
     });
 
-    return Response.json({ ok: true, round: newRound, deadline, notified: members.length });
+    return Response.json({ ok: true, round: newRound, deadline, notified: members.length, auditWarning: _au.ok ? undefined : _au.error });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

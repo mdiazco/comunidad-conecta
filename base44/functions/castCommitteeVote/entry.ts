@@ -96,13 +96,13 @@ export default async function(req) {
     }
     // outcome 'tie' o 'pending' → permanece en en_votacion_comite
 
-    await writeAudit(base44, {
+    const _au = await writeAudit(base44, {
       entity_type: 'CommitteeVote', entity_id: taskId, action: 'create', user,
       details: `Voto ${vote} en ronda ${round}${comment ? ` — "${comment}"` : ''}${transitionedTo ? ` → ${transitionedTo}` : ''}`,
       community_id: task.community_id,
     });
 
-    return Response.json({ ok: true, vote, round, approve, reject, result: result.outcome, transitionedTo });
+    return Response.json({ ok: true, vote, round, approve, reject, result: result.outcome, transitionedTo, auditWarning: _au.ok ? undefined : _au.error });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

@@ -42,8 +42,8 @@ export default async function(req) {
         { $set: { status: 'en_votacion_comite', voting_deadline: addDays(days), voting_closed_reason: '', voting_closed_by: '', voting_closed_at: '' } }
       );
       if (!guard.updated) return Response.json({ error: 'No se pudo extender (la tarea cambió de estado simultáneamente)' }, { status: 409 });
-      await writeAudit(base44, { entity_type: 'Task', entity_id: taskId, action: 'status_change', user, details: `Plazo extendido +${days} días. Motivo: ${reason}`, community_id: task.community_id });
-      return Response.json({ ok: true, action: 'extend', newDeadline: addDays(days) });
+      const _au = await writeAudit(base44, { entity_type: 'Task', entity_id: taskId, action: 'status_change', user, details: `Plazo extendido +${days} días. Motivo: ${reason}`, community_id: task.community_id });
+      return Response.json({ ok: true, action: 'extend', newDeadline: addDays(days), auditWarning: _au.ok ? undefined : _au.error });
     }
 
     if (action === 'new_round') {
@@ -64,8 +64,8 @@ export default async function(req) {
         }
       );
       if (!guard.updated) return Response.json({ error: 'No se pudo abrir nueva ronda (la tarea cambió de estado)' }, { status: 409 });
-      await writeAudit(base44, { entity_type: 'Task', entity_id: taskId, action: 'status_change', user, details: `Nueva ronda ${newRound} abierta manualmente. Motivo: ${reason}`, community_id: task.community_id });
-      return Response.json({ ok: true, action: 'new_round', round: newRound, message: 'Tarea devuelta a pendiente_aprobacion_comite; abre la votación nuevamente.' });
+      const _au = await writeAudit(base44, { entity_type: 'Task', entity_id: taskId, action: 'status_change', user, details: `Nueva ronda ${newRound} abierta manualmente. Motivo: ${reason}`, community_id: task.community_id });
+      return Response.json({ ok: true, action: 'new_round', round: newRound, message: 'Tarea devuelta a pendiente_aprobacion_comite; abre la votación nuevamente.', auditWarning: _au.ok ? undefined : _au.error });
     }
 
     // action === 'reject'
@@ -74,9 +74,9 @@ export default async function(req) {
       { $set: { status: 'rechazado_final', rejection_reason: reason, voting_closed_reason: reason, voting_closed_by: user.email, voting_closed_at: now } }
     );
     if (!guard.updated) return Response.json({ error: 'No se pudo rechazar (la tarea cambió de estado)' }, { status: 409 });
-    await writeAudit(base44, { entity_type: 'Task', entity_id: taskId, action: 'status_change', user, details: `Rechazo manual definitivo. Motivo: ${reason}`, community_id: task.community_id });
+    const _au = await writeAudit(base44, { entity_type: 'Task', entity_id: taskId, action: 'status_change', user, details: `Rechazo manual definitivo. Motivo: ${reason}`, community_id: task.community_id });
     await notifyUser(base44, task.committee_sent_by || '', 'Reparación rechazada definitivamente', `La reparación "${task.title}" fue rechazada. Motivo: ${reason}`, 'general', task.community_id, `/tasks/${taskId}`);
-    return Response.json({ ok: true, action: 'reject', revertedTo: 'rechazado_final' });
+    return Response.json({ ok: true, action: 'reject', revertedTo: 'rechazado_final', auditWarning: _au.ok ? undefined : _au.error });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
