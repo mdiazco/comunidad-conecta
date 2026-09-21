@@ -17,9 +17,10 @@ const EMPTY = {
   approval_mode: 'majority', min_committee_votes: 1, admin_can_veto: true
 };
 
-export default function CommunityFormDialog({ open, onOpenChange, community }) {
+export default function CommunityFormDialog({ open, onOpenChange, community, user }) {
   const [form, setForm] = useState(EMPTY);
   const queryClient = useQueryClient();
+  const isPlatformAdmin = user?.role === 'admin' || user?.role === 'superadmin';
 
   useEffect(() => {
     if (community) {
@@ -34,7 +35,11 @@ export default function CommunityFormDialog({ open, onOpenChange, community }) {
   const mutation = useMutation({
     mutationFn: (data) => {
       const payload = { ...data, units: Number(data.units), year_built: data.year_built ? Number(data.year_built) : undefined };
-      if (community) return base44.entities.Community.update(community.id, payload);
+      if (community) {
+        // Admin de plataforma actualiza directo; administrador de comunidad vía backend function (valida permiso)
+        if (isPlatformAdmin) return base44.entities.Community.update(community.id, payload);
+        return base44.functions.invoke('updateCommunityConfig', { community_id: community.id, data: payload }).then(r => r.data?.community || r.data);
+      }
       return base44.entities.Community.create(payload);
     },
     onSuccess: () => {

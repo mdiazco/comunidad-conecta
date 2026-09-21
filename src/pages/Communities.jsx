@@ -68,7 +68,9 @@ export default function Communities() {
     setFilterRegion(''); setFilterComuna(''); setFilterType(''); setFilterUnits('');
   };
 
-  const canCreate = rbac ? rbac.can('comunidad', 'crear') : true;
+  const isPlatformAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+  // Crear comunidad es exclusivo del admin de plataforma; editar lo da el RBAC (y la backend function valida por comunidad)
+  const canCreate = isPlatformAdmin;
   const canEdit   = rbac ? rbac.can('comunidad', 'editar') : true;
 
   return (
@@ -265,6 +267,7 @@ export default function Communities() {
           open={formOpen}
           onOpenChange={setFormOpen}
           community={editing}
+          user={user}
         />
       </div>
     </PermissionGate>

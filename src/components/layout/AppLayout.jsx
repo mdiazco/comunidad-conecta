@@ -16,8 +16,19 @@ export default function AppLayout() {
 
   const rbac = useRBAC(user);
 
-  // TEMPORAL-BYPASS — eliminar tras pruebas Fase 5 (usuario de prueba no-admin)
-  const TEMP_BYPASS_EMAIL = 'mdiazco@gmail.com';
+  // Fase 5 — gate: acceso para admin de plataforma o miembros activos de cualquier comunidad
+  const [membershipChecked, setMembershipChecked] = useState(false);
+  const [hasCommunity, setHasCommunity] = useState(false);
+
+  useEffect(() => {
+    if (!user?.email) return;
+    if (user?.role === 'admin' || user?.role === 'superadmin') {
+      setHasCommunity(true); setMembershipChecked(true); return;
+    }
+    base44.entities.CommunityMember.filter({ user_email: user.email, status: 'active' })
+      .then(m => { setHasCommunity(m.length > 0); setMembershipChecked(true); })
+      .catch(() => { setHasCommunity(false); setMembershipChecked(true); });
+  }, [user?.email, user?.role]);
 
   useEffect(() => {
     if (!user?.email) return;
@@ -26,16 +37,7 @@ export default function AppLayout() {
       .catch(() => {});
   }, [user?.email]);
 
-  // Exponer base44 en la consola solo bajo el bypass (para pruebas)
-  useEffect(() => {
-    if (user?.email?.toLowerCase() === TEMP_BYPASS_EMAIL && user?.role !== 'admin') {
-      window.base44 = base44;
-    } else if (window.base44) {
-      delete window.base44;
-    }
-  }, [user?.email, user?.role]);
-
-  if (loading || rbac.loadingRoles) {
+  if (loading || rbac.loadingRoles || !membershipChecked) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
@@ -43,8 +45,9 @@ export default function AppLayout() {
     );
   }
 
-  // Solo usuarios con rol de plataforma "admin" pueden acceder al panel.
-  if (user?.role !== 'admin' && user?.email?.toLowerCase() !== TEMP_BYPASS_EMAIL) {
+  // Fase 5 — acceso para admin de plataforma o miembros activos de cualquier comunidad
+  const isPlatformAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+  if (!isPlatformAdmin && !hasCommunity) {
     return <AdminOnlyAccess userName={user?.full_name || user?.email} />;
   }
 

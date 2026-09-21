@@ -10,7 +10,7 @@ import { base44 } from '@/api/base44Client';
 // module key must match MODULES in useRBAC.js
 const NAV_ITEMS = [
   { path: '/dashboard',       icon: LayoutDashboard, label: 'Dashboard',         module: 'dashboard' },
-  { path: '/communities',     icon: Building2,        label: 'Comunidades',       module: 'comunidad',      superadminOnly: true },
+  { path: '/communities',     icon: Building2,        label: 'Comunidades',       module: 'comunidad' },
   { path: '/tasks',           icon: ClipboardList,    label: 'Tareas',            module: 'tareas' },
   { path: '/budget-approval',  icon: DollarSign,       label: 'Aprobación Presup.', module: 'tareas' },
   { path: '/budget-dashboard', icon: BarChart2,       label: 'Dashboard Presup.',  module: 'tareas' },
@@ -19,7 +19,7 @@ const NAV_ITEMS = [
   { path: '/suppliers',       icon: Store,            label: 'Proveedores',       module: 'proveedores' },
   { path: '/building-health', icon: HeartPulse,       label: 'Salud del Edificio', module: 'salud' },
   { path: '/committee-members', icon: UserCog,          label: 'Comité',            module: 'usuarios' },
-  { path: '/users',           icon: Users,            label: 'Usuarios',          module: 'usuarios' },
+  { path: '/users',           icon: Users,            label: 'Usuarios',          module: 'usuarios', superadminOnly: true },
   { path: '/notifications',   icon: Bell,             label: 'Notificaciones',    module: 'notificaciones' },
   { path: '/roles',           icon: Shield,           label: 'Roles y Permisos',  module: null, superadminOnly: true, alwaysVisible: true },
 ];
