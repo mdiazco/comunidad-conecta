@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
-import { isPlatformAdmin, getMembership, writeAudit } from '../../shared/voting.ts';
+import { isPlatformAdmin, getMemberships, writeAudit } from '../../shared/voting.ts';
 
 // Actualiza el progreso de una tarea (y opcionalmente la finaliza si llega a 100).
 // Puede ejecutarlo: el operativo asignado (assigned_to == su email), equipo/administrador
@@ -25,8 +25,8 @@ export default async function(req) {
     const isAssigned = (task.assigned_to || '').toLowerCase() === (user.email || '').toLowerCase();
     let allowed = isAssigned || isPlatformAdmin(user);
     if (!allowed) {
-      const m = await getMembership(base44, user.email, task.community_id);
-      if (m && ['administrador', 'equipo'].includes(m.role)) allowed = true;
+      const list = await getMemberships(base44, user.email, task.community_id);
+      if (list.some(m => ['administrador', 'equipo'].includes(m.role))) allowed = true;
     }
     if (!allowed) {
       return Response.json({ error: 'Sin permiso: no eres el responsable asignado ni administrador/equipo de la comunidad' }, { status: 403 });

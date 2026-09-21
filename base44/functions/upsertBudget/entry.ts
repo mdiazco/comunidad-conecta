@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
-import { isPlatformAdmin, getMembership, writeAudit } from '../../shared/voting.ts';
+import { isPlatformAdmin, getMemberships, writeAudit } from '../../shared/voting.ts';
 
 // Crea o actualiza un presupuesto. Requiere admin de plataforma, o administrador/equipo de la comunidad.
 // La tarea debe estar en una etapa que permita editar presupuestos (no bloqueada).
@@ -25,8 +25,8 @@ export default async function(req) {
     if (!task) return Response.json({ error: 'Tarea no encontrada' }, { status: 404 });
 
     if (!isPlatformAdmin(user)) {
-      const m = await getMembership(base44, user.email, task.community_id);
-      if (!m || !['administrador', 'equipo'].includes(m.role)) {
+      const list = await getMemberships(base44, user.email, task.community_id);
+      if (!list.some(m => ['administrador', 'equipo'].includes(m.role))) {
         return Response.json({ error: 'Sin permiso: se requiere administrador o equipo de la comunidad' }, { status: 403 });
       }
     }

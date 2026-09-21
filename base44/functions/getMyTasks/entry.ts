@@ -23,11 +23,15 @@ export default async function(req) {
 
     const commIds = memberships.map(m => m.community_id);
     const isAdminOf = new Set(memberships.filter(m => m.role === 'administrador').map(m => m.community_id));
+    const isCommitteeOf = new Set(memberships.filter(m => m.role === 'comite').map(m => m.community_id));
+    const VOTING_STATUSES = ['pendiente_aprobacion_comite', 'en_votacion_comite', 'aprobado_comite', 'rechazado_comite', 'pendiente_aprobacion_admin', 'aprobado_final', 'rechazado_final'];
 
     const all = await base44.asServiceRole.entities.Task.list('-updated_date', 200);
     const mine = all.filter(t => {
       if (!commIds.includes(t.community_id)) return false;
       if (isAdminOf.has(t.community_id)) return true; // administrador ve todo de su comunidad
+      // comité: ve las tareas en el flujo de votación de su comunidad (debe votarlas)
+      if (isCommitteeOf.has(t.community_id) && VOTING_STATUSES.includes(t.status)) return true;
       // equipo/operativo: solo las asignadas a él o creadas por él
       return (t.assigned_to || '').toLowerCase() === (user.email || '').toLowerCase()
         || (t.created_by || '').toLowerCase() === (user.email || '').toLowerCase();

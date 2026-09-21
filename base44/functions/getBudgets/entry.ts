@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
-import { isPlatformAdmin, getMembership } from '../../shared/voting.ts';
+import { isPlatformAdmin, getMemberships } from '../../shared/voting.ts';
 
 // Presupuestos de una tarea, sanitizados. Requiere admin de plataforma o membresía activa
 // (cualquier rol) de la comunidad de la tarea.
@@ -18,8 +18,8 @@ export default async function(req) {
     if (!task) return Response.json({ error: 'Tarea no encontrada' }, { status: 404 });
 
     if (!isPlatformAdmin(user)) {
-      const m = await getMembership(base44, user.email, task.community_id);
-      if (!m) return Response.json({ error: 'No eres miembro activo de esta comunidad' }, { status: 403 });
+      const list = await getMemberships(base44, user.email, task.community_id);
+      if (list.length === 0) return Response.json({ error: 'No eres miembro activo de esta comunidad' }, { status: 403 });
     }
 
     const budgets = await base44.asServiceRole.entities.Budget.filter({ task_id: taskId });

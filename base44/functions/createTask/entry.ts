@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
-import { isPlatformAdmin, getMembership, writeAudit } from '../../shared/voting.ts';
+import { isPlatformAdmin, getMemberships, writeAudit } from '../../shared/voting.ts';
 
 // Crea una tarea. Requiere admin de plataforma o administrador de la comunidad.
 // La comunidad de la tarea debe coincidir con una comunidad del usuario.
@@ -19,8 +19,8 @@ export default async function(req) {
     }
 
     if (!isPlatformAdmin(user)) {
-      const m = await getMembership(base44, user.email, communityId);
-      if (!m || m.role !== 'administrador') {
+      const list = await getMemberships(base44, user.email, communityId);
+      if (!list.some(m => m.role === 'administrador')) {
         return Response.json({ error: 'Sin permiso: se requiere administrador de la comunidad' }, { status: 403 });
       }
     }

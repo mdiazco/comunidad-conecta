@@ -19,11 +19,21 @@ export async function getMembership(base44, userEmail, communityId) {
   return list[0] || null;
 }
 
+// Devuelve TODAS las membresías activas del usuario en la comunidad (no solo la primera).
+// Usar esta cuando se deba evaluar si el usuario cumple un rol por pertenencia múltiple.
+export async function getMemberships(base44, userEmail, communityId) {
+  return base44.asServiceRole.entities.CommunityMember.filter({
+    community_id: communityId,
+    user_email: userEmail,
+    status: 'active',
+  });
+}
+
 // ¿Puede el usuario gestionar la comunidad (abrir/cerrar/aprobar/vetar)?
 export async function canManageCommunity(base44, user, communityId) {
   if (isPlatformAdmin(user)) return true;
-  const m = await getMembership(base44, user.email, communityId);
-  return m?.role === 'administrador';
+  const list = await getMemberships(base44, user.email, communityId);
+  return list.some(m => m.role === 'administrador');
 }
 
 export async function getCommunityConfig(base44, communityId) {

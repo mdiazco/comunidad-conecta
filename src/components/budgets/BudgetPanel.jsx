@@ -13,7 +13,7 @@ import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import BudgetFormDialog from './BudgetFormDialog';
 import SendToCommitteeDialog from './SendToCommitteeDialog';
-import { getBudgets, advanceToEvaluation, selectBudget, giveVoBo, rejectBudget } from '@/lib/votingApi';
+import { getBudgets, advanceToEvaluation, selectBudget, giveVoBo, rejectBudget, getCommitteeMembersFn } from '@/lib/votingApi';
 
 const MIN_BUDGETS = 3;
 
@@ -45,8 +45,10 @@ export default function BudgetPanel({ task, canApprove, user }) {
   });
 
   const { data: members = [] } = useQuery({
-    queryKey: ['community-members', task.community_id],
-    queryFn: () => base44.entities.CommunityMember.filter({ community_id: task.community_id, status: 'active' }),
+    queryKey: ['community-members', task.community_id, isPlatformAdmin],
+    queryFn: () => isPlatformAdmin
+      ? base44.entities.CommunityMember.filter({ community_id: task.community_id, status: 'active' })
+      : getCommitteeMembersFn(task.community_id).then(r => (r.members || []).map(m => ({ user_email: m.email, user_name: m.name, role: 'comite' }))),
     enabled: !!task.community_id,
   });
 
