@@ -24,6 +24,8 @@ const NAV_ITEMS = [
   { path: '/roles',           icon: Shield,           label: 'Roles y Permisos',  module: null, superadminOnly: true, alwaysVisible: true },
 ];
 
+const LOGO_URL = "https://media.base44.com/images/public/69be92d9b179f726fbced205/6eda2364a_comunidad-removebg-preview1.png";
+
 export default function Sidebar({ user, rbac, collapsed, setCollapsed, mobileOpen, setMobileOpen, unreadCount }) {
   const location = useLocation();
   const isSuperAdmin = rbac?.isSuperAdmin ?? (user?.role === 'superadmin' || user?.role === 'admin');
@@ -42,30 +44,38 @@ export default function Sidebar({ user, rbac, collapsed, setCollapsed, mobileOpe
   const handleLogout = () => base44.auth.logout('/');
 
   const navContent = (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
+      {/* Decorative glow */}
+      <div
+        className="pointer-events-none absolute -inset-8 z-0"
+        style={{
+          background:
+            "radial-gradient(circle at 82% 8%, rgba(255,255,255,.28), transparent 30%), radial-gradient(circle at 5% 78%, rgba(91,231,255,.2), transparent 32%)"
+        }}
+      />
+
       {/* Logo */}
       <div className={cn(
-        "flex items-center border-b border-sidebar-border shrink-0",
-        collapsed ? "p-3 justify-center h-16" : "px-4 h-16"
+        "relative z-[1] flex items-center shrink-0 border-b border-white/20",
+        collapsed ? "p-3 justify-center h-[54px]" : "h-[54px] px-2.5"
       )}>
-        {collapsed ? (
-          <img
-            src="https://media.base44.com/images/public/69be92d9b179f726fbced205/6eda2364a_comunidad-removebg-preview1.png"
-            alt="CC"
-            className="h-9 w-9 object-contain"
-          />
-        ) : (
-          <img
-            src="https://media.base44.com/images/public/69be92d9b179f726fbced205/6eda2364a_comunidad-removebg-preview1.png"
-            alt="Comunidad Conecta"
-            className="h-11 w-auto object-contain"
-          />
-        )}
+        <img
+          src={LOGO_URL}
+          alt="Comunidad Conecta"
+          className={cn(
+            "object-contain object-left-center block",
+            collapsed ? "h-8 w-8" : "h-11 w-[150px]"
+          )}
+          style={{ filter: "brightness(0) invert(1)" }}
+        />
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        {filteredItems.map(item => {
+      <nav className={cn(
+        "relative z-[1] flex-1 overflow-y-auto mt-4",
+        collapsed ? "flex flex-col gap-[3px] px-1" : "grid gap-[3px] px-0"
+      )}>
+        {filteredItems.map((item, i) => {
           const isActive = location.pathname === item.path ||
             (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
           return (
@@ -74,23 +84,26 @@ export default function Sidebar({ user, rbac, collapsed, setCollapsed, mobileOpe
               to={item.path}
               onClick={() => setMobileOpen(false)}
               className={cn(
-                "group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150",
-                collapsed && "justify-center px-2",
-                isActive
-                  ? "bg-primary text-white shadow-sm"
-                  : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                "cc-nav-item group relative flex items-center rounded-[10px] no-underline",
+                "text-white/75 hover:text-white hover:bg-white/[0.14] hover:translate-x-0.5",
+                "active:bg-white/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/90 focus-visible:outline-offset-2",
+                "transition-[background,color,box-shadow,transform] duration-[180ms] ease-out",
+                collapsed ? "justify-center min-h-[29px] p-1.5" : "min-h-[29px] gap-[11px] px-[11px] py-1.5",
+                isActive && "cc-nav-active text-white bg-white/[0.23] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_6px_16px_rgba(24,18,108,0.15)] backdrop-blur-md",
+                !collapsed && "animate-[cc-rise_450ms_cubic-bezier(.22,1,.36,1)_both]"
               )}
+              style={!collapsed ? { animationDelay: `${0.04 + i * 0.03}s` } : undefined}
               title={collapsed ? item.label : undefined}
             >
-              <item.icon className="h-4 w-4 shrink-0" />
-              {!collapsed && <span className="truncate">{item.label}</span>}
+              <item.icon className="h-[15px] w-[15px] shrink-0" strokeWidth={1.9} />
+              {!collapsed && <span className="truncate text-[11px] font-medium tracking-[0.015em] leading-tight">{item.label}</span>}
               {!collapsed && item.path === '/notifications' && unreadCount > 0 && (
-                <span className="ml-auto bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                <span className="ml-auto bg-white/25 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full min-w-[18px] text-center border border-white/30">
                   {unreadCount}
                 </span>
               )}
               {collapsed && item.path === '/notifications' && unreadCount > 0 && (
-                <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full" />
+                <span className="absolute top-1 right-1 h-2 w-2 bg-white rounded-full" />
               )}
             </Link>
           );
@@ -98,33 +111,44 @@ export default function Sidebar({ user, rbac, collapsed, setCollapsed, mobileOpe
       </nav>
 
       {/* User + Logout */}
-      <div className="p-3 border-t border-sidebar-border shrink-0">
+      <div className="relative z-[1] border-t border-white/20 pt-3 px-1 pb-1 shrink-0">
         {!collapsed && user && (
-          <div className="flex items-center gap-3 px-3 py-2.5 mb-1">
-            <div className="h-7 w-7 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-              <span className="text-xs font-bold text-primary">
+          <div className="flex items-center gap-2.5 px-1.5 pb-2.5 cc-rise-account" style={{ animation: 'cc-rise 500ms 0.4s cubic-bezier(.22,1,.36,1) both' }}>
+            <div className="h-[29px] w-[29px] rounded-full bg-white/20 border border-white/35 flex items-center justify-center shrink-0">
+              <span className="text-[11px] font-bold text-white">
                 {(user.full_name || user.email || '?')[0].toUpperCase()}
               </span>
             </div>
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-sidebar-foreground truncate leading-tight">
+            <div className="min-w-0 leading-tight">
+              <p className="text-[11px] font-semibold text-white truncate">
                 {user.full_name || user.email}
               </p>
-              <p className="text-xs text-sidebar-foreground/40 truncate">
+              <p className="text-[9px] text-white/55 truncate mt-[3px]">
                 {isImpersonating ? rbac?.impersonatedRole?.name : (user.role || 'usuario')}
               </p>
+            </div>
+          </div>
+        )}
+        {collapsed && user && (
+          <div className="flex justify-center pb-2">
+            <div className="h-7 w-7 rounded-full bg-white/20 border border-white/35 flex items-center justify-center">
+              <span className="text-[11px] font-bold text-white">
+                {(user.full_name || user.email || '?')[0].toUpperCase()}
+              </span>
             </div>
           </div>
         )}
         <button
           onClick={handleLogout}
           className={cn(
-            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground/50 hover:text-red-400 hover:bg-sidebar-accent transition-colors w-full",
-            collapsed && "justify-center"
+            "w-full flex items-center gap-2.5 rounded-[9px] text-white/60 hover:text-white hover:bg-white/[0.13] hover:translate-x-0.5",
+            "active:bg-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/90 focus-visible:outline-offset-2",
+            "transition-[background,color,transform] duration-[180ms] ease-out text-[11px] font-medium tracking-[0.01em]",
+            collapsed ? "justify-center p-2" : "px-2.5 py-2"
           )}
           title={collapsed ? "Cerrar sesión" : undefined}
         >
-          <LogOut className="h-4 w-4 shrink-0" />
+          <LogOut className="h-[15px] w-[15px] shrink-0" strokeWidth={1.9} />
           {!collapsed && <span>Cerrar sesión</span>}
         </button>
       </div>
@@ -139,12 +163,13 @@ export default function Sidebar({ user, rbac, collapsed, setCollapsed, mobileOpe
 
       {/* Mobile sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-sidebar transform transition-transform duration-300 ease-in-out lg:hidden",
+        "fixed inset-y-0 left-0 z-50 w-64 text-white transform transition-transform duration-300 ease-in-out lg:hidden",
+        "bg-gradient-to-br from-[#155eef] via-[#4326b8] to-[#711fbd]",
         mobileOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <button
           onClick={() => setMobileOpen(false)}
-          className="absolute top-4 right-4 text-sidebar-foreground/50 hover:text-sidebar-foreground"
+          className="absolute top-3 right-3 text-white/60 hover:text-white z-10"
         >
           <X className="h-4 w-4" />
         </button>
@@ -153,7 +178,8 @@ export default function Sidebar({ user, rbac, collapsed, setCollapsed, mobileOpe
 
       {/* Desktop sidebar */}
       <aside className={cn(
-        "hidden lg:flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 ease-in-out shrink-0 relative",
+        "hidden lg:flex flex-col text-white transition-all duration-300 ease-in-out shrink-0 relative",
+        "bg-gradient-to-br from-[#155eef] via-[#4326b8] to-[#711fbd]",
         collapsed ? "w-[60px]" : "w-60"
       )}>
         {navContent}
