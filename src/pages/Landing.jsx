@@ -1,6 +1,8 @@
 import React, { useRef, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { Building2, ClipboardList, Users, Shield, ChevronRight, CheckCircle2, Bell, FileText, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import LeadForm from '@/components/leads/LeadForm';
 
 const features = [
@@ -48,7 +50,13 @@ const workflow = [
 ];
 
 export default function Landing() {
+  const { isAuthenticated, isLoadingAuth } = useAuth();
   const handleLogin = () => base44.auth.redirectToLogin('/dashboard');
+
+  // Si el usuario ya tiene sesión (ej. tras aceptar invitación), ir al panel
+  if (!isLoadingAuth && isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div className="min-h-screen font-inter" style={{ background: '#F0F4FF' }}>
