@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { getMyCommunity } from '@/lib/votingApi';
 import { Users, Plus, Search, X, Mail, Building2, ShieldCheck, Pencil, Trash2, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,7 +40,7 @@ export default function CommitteeMembers() {
 
   const { data: communities = [] } = useQuery({
     queryKey: ['communities-list'],
-    queryFn: () => base44.entities.Community.list('name', 200),
+    queryFn: () => getMyCommunity().then(r => r.communities || []),
   });
 
   const deleteMutation = useMutation({

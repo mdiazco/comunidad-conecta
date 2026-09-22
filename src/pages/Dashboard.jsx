@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Building2, Users, Sparkles, Wrench } from 'lucide-react';
 import { isSuperAdmin } from '@/lib/permissions';
-import { getMyTasks } from '@/lib/votingApi';
+import { getMyTasks, getMyCommunity } from '@/lib/votingApi';
 import { cn } from '@/lib/utils';
 import TaskSemaphore from '@/components/dashboard/TaskSemaphore';
 import MaintenanceSemaphore from '@/components/dashboard/MaintenanceSemaphore';
@@ -61,7 +61,7 @@ export default function Dashboard() {
 
   const { data: communities = [] } = useQuery({
     queryKey: ['communities'],
-    queryFn: () => base44.entities.Community.list('-created_date'),
+    queryFn: () => getMyCommunity().then(r => r.communities || []),
     enabled: isAdmin,
   });
 

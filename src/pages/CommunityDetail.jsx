@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { getMyCommunity, getMyTasks } from '@/lib/votingApi';
+import { isSuperAdmin } from '@/lib/permissions';
 import { Building2, MapPin, Users, ClipboardList, FileText, ArrowLeft, Mail, Plus, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,15 +26,19 @@ export default function CommunityDetail() {
   const { data: community, isLoading } = useQuery({
     queryKey: ['community', communityId],
     queryFn: async () => {
-      const list = await base44.entities.Community.filter({ id: communityId });
-      return list[0];
+      const r = await getMyCommunity();
+      return (r.communities || []).find(c => c.id === communityId);
     },
     enabled: !!communityId,
   });
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['community-tasks', communityId],
-    queryFn: () => base44.entities.Task.filter({ community_id: communityId }, '-created_date'),
+    queryFn: async () => {
+      if (isSuperAdmin(user)) return base44.entities.Task.filter({ community_id: communityId }, '-created_date');
+      const r = await getMyTasks();
+      return (r.tasks || []).filter(t => t.community_id === communityId);
+    },
     enabled: !!communityId,
   });
 

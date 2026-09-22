@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { getMyCommunity } from '@/lib/votingApi';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,7 +22,7 @@ export default function ProcedureFormDialog({ open, onOpenChange }) {
 
   const { data: communities = [] } = useQuery({
     queryKey: ['communities'],
-    queryFn: () => base44.entities.Community.list(),
+    queryFn: () => getMyCommunity().then(r => r.communities || []),
   });
 
   const mutation = useMutation({

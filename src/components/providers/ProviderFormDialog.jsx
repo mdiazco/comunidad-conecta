@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { getMyCommunity } from '@/lib/votingApi';
 import { toast } from 'sonner';
 
 const SERVICE_TYPES = [
@@ -29,7 +30,7 @@ export default function ProviderFormDialog({ open, onOpenChange, provider = null
 
   const { data: communities = [] } = useQuery({
     queryKey: ['communities'],
-    queryFn: () => base44.entities.Community.list(),
+    queryFn: () => getMyCommunity().then(r => r.communities || []),
   });
 
   useEffect(() => {

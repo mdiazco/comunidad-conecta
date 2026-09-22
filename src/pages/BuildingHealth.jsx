@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { getMyCommunity } from '@/lib/votingApi';
 import { differenceInDays, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Building2, CheckCircle2, AlertTriangle, Clock, TrendingUp, BarChart2, RefreshCw } from 'lucide-react';
@@ -17,7 +18,7 @@ export default function BuildingHealth() {
   const [yearCloseOpen, setYearCloseOpen] = useState(false);
   const currentYear = getCurrentYear();
 
-  const { data: communities = [] } = useQuery({ queryKey: ['communities'], queryFn: () => base44.entities.Community.list() });
+  const { data: communities = [] } = useQuery({ queryKey: ['communities'], queryFn: () => getMyCommunity().then(r => r.communities || []) });
   const { data: maintenances = [] } = useQuery({ queryKey: ['maintenances'], queryFn: () => base44.entities.Maintenance.list('-created_date', 500) });
   const { data: tasks = [] } = useQuery({ queryKey: ['tasks'], queryFn: () => base44.entities.Task.list('-created_date', 500) });
   const { data: contracts = [] } = useQuery({ queryKey: ['contracts'], queryFn: () => base44.entities.Contract.list() });

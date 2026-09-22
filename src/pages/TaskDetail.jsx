@@ -17,7 +17,7 @@ import EvidenceList from '@/components/evidence/EvidenceList';
 import ChecklistPanel from '@/components/tasks/ChecklistPanel';
 import ScoreDialog from '@/components/providers/ScoreDialog';
 import { isSuperAdmin, canObserveTask, canStartFinishTask } from '@/lib/permissions';
-import { getMyTasks } from '@/lib/votingApi';
+import { getMyTasks, getMyCommunity, updateTaskStatus, updateTaskProgress } from '@/lib/votingApi';
 import TaskFormDialog from '@/components/tasks/TaskFormDialog';
 import BudgetPanel from '@/components/budgets/BudgetPanel';
 import CommitteeVotingPanel from '@/components/budgets/CommitteeVotingPanel';
@@ -92,7 +92,11 @@ export default function TaskDetail() {
 
   const { data: communityData = [] } = useQuery({
     queryKey: ['community', task?.community_id],
-    queryFn: () => base44.entities.Community.filter({ id: task?.community_id }),
+    queryFn: async () => {
+      const r = await getMyCommunity();
+      const c = (r.communities || []).find(x => x.id === task?.community_id);
+      return c ? [c] : [];
+    },
     enabled: !!task?.community_id,
   });
 
@@ -103,24 +107,39 @@ export default function TaskDetail() {
   const canObserve = canObserveTask(communityRole);
 
   const statusMutation = useMutation({
-    mutationFn: ({ newStatus, extra }) => base44.entities.Task.update(taskId, { status: newStatus, ...extra }),
+    mutationFn: ({ action, observation_note }) => {
+      if (isAdmin) {
+        const now = new Date().toISOString();
+        const patches = {
+          start: { status: 'en_ejecucion', started_at: now },
+          finish: { status: 'finalizada', finished_at: now, progress: 100 },
+          observe: { status: 'observada', observation_note },
+        };
+        return base44.entities.Task.update(taskId, patches[action]);
+      }
+      return updateTaskStatus(taskId, action, observation_note);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['task', taskId] });
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       toast.success('Estado actualizado');
     },
+    onError: (e) => toast.error(e?.message || 'No se pudo actualizar el estado'),
   });
 
-  const handleStartTask   = () => statusMutation.mutate({ newStatus: 'en_ejecucion', extra: { started_at: new Date().toISOString() } });
-  const handleFinishTask  = () => statusMutation.mutate({ newStatus: 'finalizada', extra: { finished_at: new Date().toISOString(), progress: 100 } });
-  const handleObserve     = () => { statusMutation.mutate({ newStatus: 'observada', extra: { observation_note: observationNote } }); setObservationNote(''); };
+  const handleStartTask   = () => statusMutation.mutate({ action: 'start' });
+  const handleFinishTask  = () => statusMutation.mutate({ action: 'finish' });
+  const handleObserve     = () => { statusMutation.mutate({ action: 'observe', observation_note: observationNote }); setObservationNote(''); };
 
   const progressMutation = useMutation({
-    mutationFn: (pct) => base44.entities.Task.update(taskId, { progress: pct }),
+    mutationFn: (pct) => isAdmin
+      ? base44.entities.Task.update(taskId, { progress: pct })
+      : updateTaskProgress(taskId, pct),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['task', taskId] });
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
+    onError: (e) => toast.error(e?.message || 'No se pudo guardar el progreso'),
   });
 
   const handleProgressChange = (delta) => {

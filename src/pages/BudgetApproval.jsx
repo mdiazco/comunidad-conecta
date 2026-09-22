@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { getMyCommunity } from '@/lib/votingApi';
 import {
   DollarSign, Clock, CheckCircle2, XCircle, AlertTriangle,
   Users, Trophy, ArrowRight, Filter, X, Search, Building2, ThumbsUp, ThumbsDown
@@ -69,7 +70,7 @@ export default function BudgetApproval() {
 
   const { data: communities = [] } = useQuery({
     queryKey: ['communities-list'],
-    queryFn: () => base44.entities.Community.list('name', 100),
+    queryFn: () => getMyCommunity().then(r => r.communities || []),
   });
 
   const { data: myMemberships = [] } = useQuery({

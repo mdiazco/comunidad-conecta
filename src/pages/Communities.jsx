@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { getMyCommunity } from '@/lib/votingApi';
 import { Plus, Search, Building2, MapPin, Home, ArrowRight, Edit, LayoutGrid, SlidersHorizontal, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,7 +38,7 @@ export default function Communities() {
 
   const { data: communities = [], isLoading } = useQuery({
     queryKey: ['communities'],
-    queryFn: () => base44.entities.Community.list('-created_date'),
+    queryFn: () => getMyCommunity().then(r => r.communities || []),
   });
 
   const regions = useMemo(() => [...new Set(communities.map(c => c.region).filter(Boolean))].sort(), [communities]);

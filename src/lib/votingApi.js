@@ -35,4 +35,5 @@ export const giveVoBo = (task_id) => invoke('giveVoBo', { task_id });
 export const rejectBudget = (task_id, reason) => invoke('rejectBudget', { task_id, reason });
 export const setBudgetException = (task_id, reason) => invoke('setBudgetException', { task_id, reason });
 export const updateTaskProgress = (task_id, progress) => invoke('updateTaskProgress', { task_id, progress });
+export const updateTaskStatus = (task_id, action, observation_note) => invoke('updateTaskStatus', { task_id, action, observation_note });
 export const markAllNotificationsRead = (all) => invoke('markAllNotificationsRead', all ? { all: true } : {});

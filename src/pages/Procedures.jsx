@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { getMyCommunity } from '@/lib/votingApi';
 import { Plus, Search, FileText, ArrowRight, Upload, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,7 +33,7 @@ export default function Procedures() {
 
   const { data: communities = [] } = useQuery({
     queryKey: ['communities'],
-    queryFn: () => base44.entities.Community.list(),
+    queryFn: () => getMyCommunity().then(r => r.communities || []),
   });
 
   const communityMap = {};

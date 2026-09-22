@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { getMyCommunity } from '@/lib/votingApi';
 import { toast } from 'sonner';
 import { getCurrentYear, getYearEndDate } from '@/lib/expertChecklists';
 
@@ -30,7 +31,7 @@ export default function ContractFormDialog({ open, onOpenChange, contract = null
   const queryClient = useQueryClient();
   const [form, setForm] = useState(EMPTY);
 
-  const { data: communities = [] } = useQuery({ queryKey: ['communities'], queryFn: () => base44.entities.Community.list() });
+  const { data: communities = [] } = useQuery({ queryKey: ['communities'], queryFn: () => getMyCommunity().then(r => r.communities || []) });
   const { data: providers = [] } = useQuery({ queryKey: ['providers'], queryFn: () => base44.entities.Provider.list() });
 
   useEffect(() => {

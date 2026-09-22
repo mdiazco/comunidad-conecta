@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { getMyCommunity } from '@/lib/votingApi';
 import { toast } from 'sonner';
 import { addDays, addMonths, addYears, format } from 'date-fns';
 import ChecklistEditor from './ChecklistEditor';
@@ -47,7 +48,7 @@ export default function MaintenanceFormDialog({ open, onOpenChange, maintenance 
   const queryClient = useQueryClient();
   const [form, setForm] = useState(EMPTY);
 
-  const { data: communities = [] } = useQuery({ queryKey: ['communities'], queryFn: () => base44.entities.Community.list() });
+  const { data: communities = [] } = useQuery({ queryKey: ['communities'], queryFn: () => getMyCommunity().then(r => r.communities || []) });
   const { data: members = [] } = useQuery({
     queryKey: ['community_members', form.community_id],
     queryFn: () => base44.entities.CommunityMember.filter({ community_id: form.community_id }),
