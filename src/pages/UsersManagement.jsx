@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Search, Users, Trash2, Shield, FlaskConical } from 'lucide-react';
+import { Plus, Search, Users, Trash2, Shield, FlaskConical, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -138,6 +138,16 @@ export default function UsersManagement() {
     (m.user_name || m.user_email || '').toLowerCase().includes(search.toLowerCase())
   );
 
+  const memberEmails = new Set(activeMembers.map(m => (m.user_email || '').toLowerCase()));
+  const pendingUsers = allUsers.filter(
+    u => u.email && u.email !== user?.email && !memberEmails.has(u.email.toLowerCase())
+  );
+
+  const openAddForUser = (u) => {
+    setNewMember({ community_id: '', user_email: u.email, user_name: u.full_name || '', role: 'operativo' });
+    setFormOpen(true);
+  };
+
   const ROLE_COLORS = {
     administrador: 'bg-primary/10 text-primary',
     equipo: 'bg-amber-100 text-amber-700',
@@ -184,6 +194,33 @@ export default function UsersManagement() {
                 </Button>
               ))}
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {isAdmin && pendingUsers.length > 0 && (
+        <Card className="border-amber-200 bg-amber-50/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2 text-amber-800">
+              <UserCheck className="h-4 w-4" />
+              Pendientes de acceso — {pendingUsers.length}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p className="text-xs text-amber-700 mb-2">
+              Usuarios registrados que aún no pertenecen a ninguna comunidad. Asígnales una comunidad y rol para autorizar su acceso.
+            </p>
+            {pendingUsers.map(u => (
+              <div key={u.id} className="flex items-center justify-between gap-3 bg-white rounded-lg border border-amber-100 px-3 py-2">
+                <div className="min-w-0">
+                  <p className="font-medium truncate text-sm">{u.full_name || '(sin nombre)'}</p>
+                  <p className="text-xs text-muted-foreground truncate">{u.email}</p>
+                </div>
+                <Button size="sm" onClick={() => openAddForUser(u)}>
+                  <Plus className="h-4 w-4 mr-1" /> Autorizar acceso
+                </Button>
+              </div>
+            ))}
           </CardContent>
         </Card>
       )}
