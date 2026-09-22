@@ -70,8 +70,8 @@ export default function Communities() {
   };
 
   const isPlatformAdmin = user?.role === 'admin' || user?.role === 'superadmin';
-  // Crear comunidad es exclusivo del admin de plataforma; editar lo da el RBAC (y la backend function valida por comunidad)
-  const canCreate = isPlatformAdmin;
+  // Crear comunidad: admin de plataforma o rol RBAC con permiso de crear en el módulo comunidad
+  const canCreate = isPlatformAdmin || (rbac ? rbac.can('comunidad', 'crear') : false);
   const canEdit   = rbac ? rbac.can('comunidad', 'editar') : true;
 
   return (
