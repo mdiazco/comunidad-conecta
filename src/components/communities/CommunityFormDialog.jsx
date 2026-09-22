@@ -14,7 +14,8 @@ import { Switch } from '@/components/ui/switch';
 const EMPTY = {
   name: '', address: '', region: '', comuna: '', type: 'edificio',
   units: '', rut: '', contact_email: '', description: '', year_built: '',
-  approval_mode: 'majority', min_committee_votes: 1, admin_can_veto: true
+  approval_mode: 'majority', min_committee_votes: 1, admin_can_veto: true,
+  voting_deadline_days: 7, max_voting_rounds: 3
 };
 
 export default function CommunityFormDialog({ open, onOpenChange, community, user }) {
@@ -139,6 +140,18 @@ export default function CommunityFormDialog({ open, onOpenChange, community, use
               <div>
                 <Label>Mín. votos requeridos</Label>
                 <Input type="number" min="1" value={form.min_committee_votes} onChange={e => set('min_committee_votes', Number(e.target.value))} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Días de plazo de votación</Label>
+                <Input type="number" min="1" value={form.voting_deadline_days} onChange={e => set('voting_deadline_days', Number(e.target.value))} />
+                <p className="text-xs text-muted-foreground mt-1">Días de plazo para que el comité vote</p>
+              </div>
+              <div>
+                <Label>Máx. rondas de votación</Label>
+                <Input type="number" min="1" value={form.max_voting_rounds} onChange={e => set('max_voting_rounds', Number(e.target.value))} />
+                <p className="text-xs text-muted-foreground mt-1">Intentos máximos de votación antes de escalar a decisión manual</p>
               </div>
             </div>
             <div className="flex items-center justify-between">
