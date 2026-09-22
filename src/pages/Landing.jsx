@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Building2, ClipboardList, Users, Shield, ChevronRight, CheckCircle2, Bell, FileText, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import LeadForm from '@/components/leads/LeadForm';
 
 const features = [
   {
@@ -230,6 +231,43 @@ export default function Landing() {
             >
               Ingreso a la plataforma
             </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CONTACTO / REGISTRO ── */}
+      <section id="contacto" className="py-20 px-6" style={{ background: 'white' }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-10 items-center">
+            {/* Texto */}
+            <div>
+              <h2 className="font-bold text-4xl mb-3" style={{ color: '#0A0A2E' }}>Solicita tu acceso</h2>
+              <p className="text-base mb-6 leading-relaxed" style={{ color: '#6B7280' }}>
+                Déjanos tus datos y un asesor de Comunidad Conecta te contactará para habilitar tu comunidad en la plataforma.
+              </p>
+              <ul className="space-y-3">
+                {[
+                  'Configuración asistida de tu comunidad',
+                  'Capacitación del equipo y comité',
+                  'Soporte durante el primer mes',
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-sm" style={{ color: '#444466' }}>
+                    <CheckCircle2 className="w-5 h-5 shrink-0" style={{ color: '#0055FF' }} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Formulario */}
+            <div
+              className="rounded-3xl p-8"
+              style={{ background: '#F8FAFF', border: '1.5px solid #E0E8FF', boxShadow: '0 12px 40px rgba(0,85,255,0.1)' }}
+            >
+              <h3 className="font-bold text-xl mb-1" style={{ color: '#0A0A2E' }}>Formulario de registro</h3>
+              <p className="text-sm mb-5" style={{ color: '#6B7280' }}>Completa tus datos para comenzar.</p>
+              <LeadForm />
+            </div>
           </div>
         </div>
       </section>

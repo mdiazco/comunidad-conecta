@@ -1,0 +1,56 @@
+{
+  "name": "Lead",
+  "type": "object",
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  },
+  "properties": {
+    "full_name": {
+      "type": "string",
+      "description": "Nombre completo del interesado"
+    },
+    "rut": {
+      "type": "string",
+      "description": "RUT del interesado"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email de contacto"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Tel\u00e9fono de contacto"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "nuevo",
+        "contactado",
+        "descartado"
+      ],
+      "default": "nuevo",
+      "description": "Estado del lead"
+    }
+  },
+  "required": [
+    "full_name",
+    "rut",
+    "email",
+    "phone"
+  ]
+}
