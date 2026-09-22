@@ -9,6 +9,7 @@ import {
 // - Invocación desde el workflow programado (sin usuario): requiere el shared secret
 //   exclusivo del workflow en el body (401 si falta o no coincide). Una llamada anónima
 //   sin el token recibe 401.
+// (republish para recargar secret WORKFLOW_DEADLINE_TOKEN)
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -23,7 +24,7 @@ export default async function(req) {
       if (!expectedToken || body?.token !== expectedToken) {
         return Response.json({ error: 'No autorizado: token del workflow inválido o ausente' }, { status: 401 });
       }
-      actor = { email: 'system@workflow', full_name: 'Workflow programado', role: 'admin' };
+      actor = { email: 'system@workflow', full_name: 'Workflow programado (chequeo diario)', role: 'admin' };
     }
 
     const now = new Date().toISOString();
