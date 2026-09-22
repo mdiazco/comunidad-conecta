@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Search, Inbox, UserPlus, CheckCircle2, XCircle, Mail, Phone, IdCard, Loader2 } from 'lucide-react';
+import { Search, Inbox, UserPlus, CheckCircle2, XCircle, Mail, Phone, IdCard, Loader2, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +36,19 @@ export default function Leads() {
     },
     onError: (err, lead) => {
       const msg = err?.response?.data?.error || err?.message || 'No se pudo autorizar.';
+      toast.error(`Error para ${lead.email}: ${msg}`);
+    },
+  });
+
+  const resendMutation = useMutation({
+    mutationFn: async (lead) => {
+      await base44.users.inviteUser(lead.email, 'user');
+    },
+    onSuccess: (_, lead) => {
+      toast.success(`Invitación reenviada a ${lead.email}`);
+    },
+    onError: (err, lead) => {
+      const msg = err?.response?.data?.error || err?.message || 'No se pudo reenviar.';
       toast.error(`Error para ${lead.email}: ${msg}`);
     },
   });
@@ -132,9 +145,24 @@ export default function Leads() {
                       </>
                     )}
                     {lead.status === 'autorizado' && (
-                      <span className="flex items-center gap-1.5 text-sm text-emerald-600 font-medium">
-                        <CheckCircle2 className="h-4 w-4" /> Invitación enviada
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="hidden sm:flex items-center gap-1.5 text-sm text-emerald-600 font-medium">
+                          <CheckCircle2 className="h-4 w-4" /> Invitación enviada
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => resendMutation.mutate(lead)}
+                          disabled={resendMutation.isPending && resendMutation.variables?.id === lead.id}
+                        >
+                          {resendMutation.isPending && resendMutation.variables?.id === lead.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Send className="h-4 w-4 mr-1" />
+                          )}
+                          Reenviar
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </div>
