@@ -30,7 +30,7 @@
           "with": {
             "function_name": "checkVotingDeadlines",
             "args": {
-              "token": "__REPLACE_WITH_WORKFLOW_DEADLINE_TOKEN_SECRET__"
+              "token": "02547e771e734b94982cbc0c0d3c9c80d5902cb8ee5e49aab633ac8a3f8b9497"
             }
           },
           "then": "end",
