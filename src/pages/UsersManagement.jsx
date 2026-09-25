@@ -49,6 +49,11 @@ export default function UsersManagement() {
     queryFn: () => base44.entities.User.list(),
   });
 
+  const { data: authorizedLeads = [] } = useQuery({
+    queryKey: ['authorized-leads'],
+    queryFn: () => base44.entities.Lead.filter({ status: 'autorizado' }),
+  });
+
   const createMutation = useMutation({
     mutationFn: async (data) => {
       // 1. Crear el miembro en la comunidad
@@ -73,6 +78,7 @@ export default function UsersManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-members'] });
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
+      queryClient.invalidateQueries({ queryKey: ['authorized-leads'] });
       setFormOpen(false);
       setNewMember({ community_id: '', user_email: '', user_name: '', role: 'operativo' });
       toast.success('Miembro agregado y permisos RBAC asignados');
@@ -143,8 +149,19 @@ export default function UsersManagement() {
     u => u.email && u.email !== user?.email && !memberEmails.has(u.email.toLowerCase())
   );
 
+  // Leads autorizados que aún no tienen usuario registrado ni membresía
+  const userEmails = new Set(allUsers.map(u => (u.email || '').toLowerCase()));
+  const pendingLeads = authorizedLeads.filter(
+    l => l.email && !userEmails.has(l.email.toLowerCase()) && !memberEmails.has(l.email.toLowerCase())
+  );
+
   const openAddForUser = (u) => {
     setNewMember({ community_id: '', user_email: u.email, user_name: u.full_name || '', role: 'operativo' });
+    setFormOpen(true);
+  };
+
+  const openAddForLead = (l) => {
+    setNewMember({ community_id: '', user_email: l.email, user_name: l.full_name || '', role: 'operativo' });
     setFormOpen(true);
   };
 
@@ -198,18 +215,29 @@ export default function UsersManagement() {
         </Card>
       )}
 
-      {isAdmin && pendingUsers.length > 0 && (
+      {isAdmin && (pendingUsers.length > 0 || pendingLeads.length > 0) && (
         <Card className="border-amber-200 bg-amber-50/50">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2 text-amber-800">
               <UserCheck className="h-4 w-4" />
-              Pendientes de acceso — {pendingUsers.length}
+              Pendientes de acceso — {pendingUsers.length + pendingLeads.length}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <p className="text-xs text-amber-700 mb-2">
-              Usuarios registrados que aún no pertenecen a ninguna comunidad. Asígnales una comunidad y rol para autorizar su acceso.
+              Usuarios invitados o registrados que aún no pertenecen a ninguna comunidad. Asígnales una comunidad y rol para autorizar su acceso.
             </p>
+            {pendingLeads.map(l => (
+              <div key={`lead-${l.id}`} className="flex items-center justify-between gap-3 bg-white rounded-lg border border-amber-100 px-3 py-2">
+                <div className="min-w-0">
+                  <p className="font-medium truncate text-sm">{l.full_name || '(sin nombre)'}</p>
+                  <p className="text-xs text-muted-foreground truncate">{l.email} · <span className="italic">invitación enviada</span></p>
+                </div>
+                <Button size="sm" onClick={() => openAddForLead(l)}>
+                  <Plus className="h-4 w-4 mr-1" /> Asignar comunidad
+                </Button>
+              </div>
+            ))}
             {pendingUsers.map(u => (
               <div key={u.id} className="flex items-center justify-between gap-3 bg-white rounded-lg border border-amber-100 px-3 py-2">
                 <div className="min-w-0">

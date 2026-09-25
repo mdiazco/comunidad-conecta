@@ -32,6 +32,8 @@ export default function Leads() {
     },
     onSuccess: (_, lead) => {
       queryClient.invalidateQueries({ queryKey: ['leads'] });
+      queryClient.invalidateQueries({ queryKey: ['authorized-leads'] });
+      queryClient.invalidateQueries({ queryKey: ['all-users'] });
       toast.success(`Invitación enviada a ${lead.email}`);
     },
     onError: (err, lead) => {
