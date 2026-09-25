@@ -67,8 +67,6 @@ export default function UsersManagement() {
       if (rbacRole && data.user_email) {
         const matchingUser = allUsers.find(u => u.email === data.user_email);
         if (matchingUser) {
-          await base44.auth.updateMe({ rbac_role_id: rbacRole.id });
-          // Actualizar en la entidad User directamente si encontramos el usuario
           await base44.entities.User.update(matchingUser.id, { rbac_role_id: rbacRole.id });
         }
       }

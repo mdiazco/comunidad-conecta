@@ -15,6 +15,10 @@
     "phone": {
       "type": "string",
       "description": "Tel\u00e9fono de contacto"
+    },
+    "rbac_role_id": {
+      "type": "string",
+      "description": "ID del rol RBAC asignado (referencia a entidad Role)"
     }
   },
   "required": [
