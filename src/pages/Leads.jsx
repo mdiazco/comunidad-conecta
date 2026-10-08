@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Search, Inbox, UserPlus, CheckCircle2, XCircle, Mail, Phone, IdCard, Loader2, Send } from 'lucide-react';
+import { Search, Inbox, UserPlus, CheckCircle2, XCircle, Mail, Phone, IdCard, Loader2, Send, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -60,6 +60,15 @@ export default function Leads() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       toast.success('Solicitud descartada');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (lead) => base44.entities.Lead.delete(lead.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      queryClient.invalidateQueries({ queryKey: ['authorized-leads'] });
+      toast.success('Solicitud eliminada');
     },
   });
 
@@ -165,10 +174,22 @@ export default function Leads() {
                           Reenviar
                         </Button>
                       </div>
-                    )}
-                  </div>
-                </div>
-              </Card>
+                      )}
+                      <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => deleteMutation.mutate(lead)}
+                      disabled={deleteMutation.isPending && deleteMutation.variables?.id === lead.id}
+                      >
+                      {deleteMutation.isPending && deleteMutation.variables?.id === lead.id ? (
+                       <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                       <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                      )}
+                      </Button>
+                      </div>
+                      </div>
+                      </Card>
             );
           })}
         </div>
