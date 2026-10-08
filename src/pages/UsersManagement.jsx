@@ -303,7 +303,7 @@ export default function UsersManagement() {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <Badge className={`capitalize ${ROLE_COLORS[m.role] || ''}`} variant="secondary">{m.role}</Badge>
+                    <Badge className={`${ROLE_COLORS[m.role] || ''}`} variant="secondary">{COMMUNITY_ROLE_TO_RBAC[m.role] || m.role}</Badge>
                   )}
                   {isAdmin && (
                     <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(m.id)}>
