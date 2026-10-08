@@ -4,6 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
+const ROLE_LABELS = {
+  superadmin: 'Super Admin',
+  admin: 'Admin',
+  user: 'Usuario',
+};
+
 export default function TopBar({ onMenuClick, unreadCount, user }) {
   return (
     <header className="h-14 bg-card/80 backdrop-blur-sm border-b border-border flex items-center justify-between px-4 lg:px-6 shrink-0 sticky top-0 z-30">
@@ -38,7 +44,7 @@ export default function TopBar({ onMenuClick, unreadCount, user }) {
               <p className="text-sm font-medium text-foreground leading-tight">
                 {user.full_name || user.email}
               </p>
-              <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
+              <p className="text-xs text-muted-foreground">{ROLE_LABELS[user.role] || user.role}</p>
             </div>
           </div>
         )}
